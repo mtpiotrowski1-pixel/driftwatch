@@ -37,7 +37,7 @@ COPY src ./src
 RUN pip wheel --no-deps --no-build-isolation --wheel-dir /wheels .
 
 # --- Stage 3: pinned glibc runtime and independently rebuilt X.org fixes ----
-FROM cgr.dev/chainguard/wolfi-base:latest@sha256:05d24163df148be377275af8374c16523a1dc7e19bf4f1c689784791553c5e45 AS native-base
+FROM cgr.dev/chainguard/wolfi-base:latest@sha256:c08875f557c44f2e376d40ab68a6674234a8eeef06a0d10fbe9d2db40bcdb531 AS native-base
 COPY docker/native/api.apk.lock /native/api.apk.lock
 RUN test "$(apk --print-arch)" = x86_64 \
     && apk add --no-cache $(awk '{sub(/\r$/, "")} NF && !/^#/' /native/api.apk.lock)
