@@ -10,7 +10,6 @@ import httpx
 import pytest
 from fastapi import HTTPException
 from sqlalchemy import select
-from tests.conftest import ScriptedCapturer, create_org
 
 from driftwatch.api.sites import _bounded
 from driftwatch.check_queue import (
@@ -36,6 +35,7 @@ from driftwatch.models import Organization, Site, SiteCheckJob
 from driftwatch.monitoring.pipeline import CheckStatus
 from driftwatch.runner import RunResult, SiteRunner
 from driftwatch.scheduler import MonitorScheduler
+from tests.conftest import ScriptedCapturer, create_org
 
 
 async def _seed_sites(

@@ -4,13 +4,13 @@ from __future__ import annotations
 
 import httpx
 from sqlalchemy import select
-from tests.conftest import RecordingChannel, ScriptedCapturer, StubAnalyzer, create_org
 
 from driftwatch.config import Settings
 from driftwatch.db import Database
 from driftwatch.models import AnalysisRun, ChangeEvent, Recipient, Site, site_recipients
 from driftwatch.retention import prune_site_history
 from driftwatch.runner import SiteRunner
+from tests.conftest import RecordingChannel, ScriptedCapturer, StubAnalyzer, create_org
 
 _PAGES = [
     f"<html><body><h1>Docs</h1><p>Version number {index} of the body text</p></body></html>"

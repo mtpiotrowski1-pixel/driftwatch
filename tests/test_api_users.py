@@ -7,7 +7,6 @@ import re
 import httpx
 import jwt
 from sqlalchemy import select
-from tests.conftest import RecordingChannel
 
 from driftwatch.account_mail import AccountEmailWorker
 from driftwatch.api.deps import STEP_UP_COOKIE
@@ -17,6 +16,7 @@ from driftwatch.models import BillingPrice, CheckoutAttempt, Plan, Setting, User
 from driftwatch.schemas import UserCreate
 from driftwatch.security.passwords import ahash_password, averify_password
 from driftwatch.security.tokens import PURPOSE_PASSWORD_RESET, read_scoped_token
+from tests.conftest import RecordingChannel
 
 
 async def _step_up(client: httpx.AsyncClient) -> None:

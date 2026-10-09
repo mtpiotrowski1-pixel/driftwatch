@@ -4,11 +4,11 @@ that only the operator — never a customer's own admin — can change any of th
 from __future__ import annotations
 
 import httpx
-from tests.conftest import create_org, set_test_user_password
 
 from driftwatch.db import Database
 from driftwatch.models import AIUsage, Organization, Site
 from driftwatch.quota import ai_check_limit_reached
+from tests.conftest import create_org, set_test_user_password
 
 
 async def _step_up(admin_client: httpx.AsyncClient, organization_id: int | None = None) -> None:

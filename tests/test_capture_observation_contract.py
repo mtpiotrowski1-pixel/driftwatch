@@ -4,12 +4,12 @@ from __future__ import annotations
 
 import pytest
 from sqlalchemy import select
-from tests.conftest import ScriptedCapturer, create_org
 
 from driftwatch.db import Database
 from driftwatch.models import Site, Snapshot
 from driftwatch.monitoring.capture import CaptureError
 from driftwatch.monitoring.pipeline import run_check
+from tests.conftest import ScriptedCapturer, create_org
 
 
 @pytest.mark.parametrize("missing", ["", " \n\t"])

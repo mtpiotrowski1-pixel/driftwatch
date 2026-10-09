@@ -7,7 +7,6 @@ from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
 from sqlalchemy import select
-from tests.conftest import RecordingChannel, ScriptedCapturer, create_org
 
 from driftwatch.account_mail import AccountEmailWorker, enqueue_account_invitation
 from driftwatch.api.health import _scheduler_is_stale
@@ -17,6 +16,7 @@ from driftwatch.models import AccountEmailJob, ChangeEvent, Organization, Site, 
 from driftwatch.monitoring.pipeline import clear_retry_state
 from driftwatch.runner import SiteRunner
 from driftwatch.scheduler import MonitorScheduler, find_changes_to_retry, find_due_sites
+from tests.conftest import RecordingChannel, ScriptedCapturer, create_org
 
 
 async def test_find_due_sites_selects_unchecked_and_overdue(database: Database) -> None:

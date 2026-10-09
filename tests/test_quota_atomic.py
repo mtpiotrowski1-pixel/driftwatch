@@ -7,7 +7,6 @@ import asyncio
 import httpx
 import pytest
 from sqlalchemy import func, select
-from tests.conftest import RecordingChannel, ScriptedCapturer, StubAnalyzer, create_org
 
 from driftwatch.config import Settings
 from driftwatch.db import Database
@@ -20,6 +19,7 @@ from driftwatch.quota import (
     reserve_site_slot,
 )
 from driftwatch.runner import SiteRunner
+from tests.conftest import RecordingChannel, ScriptedCapturer, StubAnalyzer, create_org
 
 
 async def test_parallel_site_reservations_cannot_exceed_cap(database: Database) -> None:

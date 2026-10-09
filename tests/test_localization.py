@@ -3,8 +3,6 @@ Polish, and the org-overridable email_language reaching the runner's mail."""
 
 from __future__ import annotations
 
-from tests.conftest import RecordingChannel, ScriptedCapturer, StubAnalyzer, create_org
-
 from driftwatch.config import Settings
 from driftwatch.db import Database
 from driftwatch.localization import _STRINGS, normalize_language, tr
@@ -18,6 +16,7 @@ from driftwatch.notifications.render import (
 from driftwatch.runner import SiteRunner
 from driftwatch.security.crypto import SecretBox
 from driftwatch.settings_store import SettingsStore
+from tests.conftest import RecordingChannel, ScriptedCapturer, StubAnalyzer, create_org
 
 _V1 = "<html><body><h1>Prices</h1><p>The widget costs 10 USD today</p></body></html>"
 _V2 = "<html><body><h1>Prices</h1><p>The widget costs 12 USD today</p></body></html>"

@@ -7,7 +7,6 @@ import ipaddress
 import httpx
 import pytest
 from sqlalchemy import select
-from tests.conftest import RecordingChannel, ScriptedCapturer, StubAnalyzer, create_org
 
 import driftwatch.security.urls as urls
 from driftwatch.config import Settings
@@ -18,6 +17,7 @@ from driftwatch.monitoring.linked_assets import LinkedDocumentChecker, collect_d
 from driftwatch.monitoring.pipeline import CheckStatus
 from driftwatch.runner import SiteRunner
 from driftwatch.settings_store import SettingsStore
+from tests.conftest import RecordingChannel, ScriptedCapturer, StubAnalyzer, create_org
 
 _PAGE = (
     "<html><body><h1>Docs</h1><p>Some intro paragraph body</p>"

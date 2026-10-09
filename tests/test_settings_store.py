@@ -3,13 +3,13 @@
 from __future__ import annotations
 
 from sqlalchemy import select
-from tests.conftest import create_org
 
 from driftwatch.db import Database
 from driftwatch.enums import EmailChannelName, NotificationMode
 from driftwatch.models import OrgSetting, Setting
 from driftwatch.security.crypto import SecretBox
 from driftwatch.settings_store import SettingsStore
+from tests.conftest import create_org
 
 
 async def test_secret_is_encrypted_at_rest_and_masked_in_public(database: Database) -> None:

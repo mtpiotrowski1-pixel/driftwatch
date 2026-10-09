@@ -3,9 +3,9 @@
 from __future__ import annotations
 
 import httpx
-from tests.conftest import ScriptedCapturer, set_test_user_password
 
 from driftwatch.db import Database
+from tests.conftest import ScriptedCapturer, set_test_user_password
 
 _V1 = "<html><body><p>The first version of the page body</p></body></html>"
 _V2 = "<html><body><p>The second version of the page body</p></body></html>"

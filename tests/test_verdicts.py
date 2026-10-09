@@ -3,11 +3,11 @@
 from __future__ import annotations
 
 import httpx
-from tests.conftest import ScriptedCapturer, create_org
 
 from driftwatch.api.usage import verdict_accuracy
 from driftwatch.db import Database
 from driftwatch.models import ChangeEvent, Site, Snapshot
+from tests.conftest import ScriptedCapturer, create_org
 
 _PAGE_V1 = "<html><body><h1>Docs</h1><p>The first version of the page body</p></body></html>"
 _PAGE_V2 = "<html><body><h1>Docs</h1><p>The second version of the page body</p></body></html>"

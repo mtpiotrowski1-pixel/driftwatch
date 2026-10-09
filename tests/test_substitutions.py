@@ -6,11 +6,11 @@ from dataclasses import dataclass
 from datetime import date
 
 import httpx
-from tests.conftest import create_org
 
 from driftwatch.db import Database
 from driftwatch.models import Project, Recipient, RecipientSubstitution, Site
 from driftwatch.notifications.dispatch import resolve_send_targets
+from tests.conftest import create_org
 
 
 @dataclass

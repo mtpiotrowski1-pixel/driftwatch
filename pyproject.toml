@@ -72,7 +72,7 @@ select = ["E", "F", "I", "UP", "B", "SIM", "C4", "ASYNC", "RUF"]
 ignore = ["B008"]  # FastAPI Depends() in defaults is idiomatic.
 
 [tool.ruff.lint.isort]
-known-first-party = ["driftwatch"]
+known-first-party = ["driftwatch", "tests"]
 
 [tool.mypy]
 python_version = "3.12"

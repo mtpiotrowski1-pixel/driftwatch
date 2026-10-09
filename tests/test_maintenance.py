@@ -8,7 +8,6 @@ from types import MethodType
 
 import httpx
 from fastapi import FastAPI
-from tests.conftest import ScriptedCapturer
 
 from driftwatch.api.error_contract import RequestIdMiddleware
 from driftwatch.config import Settings
@@ -16,6 +15,7 @@ from driftwatch.db import Database
 from driftwatch.maintenance import MaintenanceGate, MaintenanceMode
 from driftwatch.runner import SiteRunner
 from driftwatch.scheduler import MonitorScheduler
+from tests.conftest import ScriptedCapturer
 
 
 async def test_maintenance_rejects_new_requests_and_drains_existing_ones() -> None:

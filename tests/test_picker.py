@@ -4,10 +4,10 @@ from __future__ import annotations
 
 import httpx
 import pytest
-from tests.conftest import FakePicker
 
 from driftwatch.monitoring.browser import BrowserChannel, detection_order, parse_channel
 from driftwatch.monitoring.picker import _OVERLAY_PATH, normalize_step
+from tests.conftest import FakePicker
 
 
 def test_detection_order_auto_prefers_edge_then_chrome_then_bundled() -> None:

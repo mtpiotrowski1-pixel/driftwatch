@@ -3,10 +3,10 @@
 from __future__ import annotations
 
 import httpx
-from tests.conftest import set_test_user_password
 
 from driftwatch.api.deps import STEP_UP_COOKIE
 from driftwatch.db import Database
+from tests.conftest import set_test_user_password
 
 _ADMIN_PASSWORD = "supersecret123"
 

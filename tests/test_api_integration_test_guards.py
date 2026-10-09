@@ -3,9 +3,9 @@
 from __future__ import annotations
 
 import httpx
-from tests.conftest import set_test_user_password
 
 from driftwatch.db import Database
+from tests.conftest import set_test_user_password
 
 
 async def _create_org_admin(

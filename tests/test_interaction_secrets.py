@@ -12,7 +12,6 @@ from pathlib import Path
 import httpx
 import pytest
 from sqlalchemy import select
-from tests.conftest import ScriptedCapturer, create_org
 
 from driftwatch.config import Settings
 from driftwatch.db import Database
@@ -22,6 +21,7 @@ from driftwatch.monitoring.pipeline import capture_and_store
 from driftwatch.schemas import InteractionStepIn
 from driftwatch.security.crypto import SecretBox
 from driftwatch.security.interaction_secrets import replace_site_interaction_steps
+from tests.conftest import ScriptedCapturer, create_org
 
 _SECRET = "vault-only-s3cret-value"
 

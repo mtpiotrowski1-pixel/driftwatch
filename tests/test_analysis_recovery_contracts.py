@@ -5,7 +5,6 @@ from __future__ import annotations
 import asyncio
 
 from sqlalchemy import func, select
-from tests.conftest import RecordingChannel, ScriptedCapturer, StubAnalyzer, create_org
 
 from driftwatch.config import Settings
 from driftwatch.db import Database
@@ -22,6 +21,7 @@ from driftwatch.models import (
 from driftwatch.monitoring.analyzer import Analysis
 from driftwatch.runner import SiteRunner
 from driftwatch.services import set_site_recipients
+from tests.conftest import RecordingChannel, ScriptedCapturer, StubAnalyzer, create_org
 
 
 async def _change(

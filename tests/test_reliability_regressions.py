@@ -9,7 +9,6 @@ from datetime import UTC, datetime, timedelta, tzinfo
 import httpx
 import pytest
 from sqlalchemy import select
-from tests.conftest import RecordingChannel, StubAnalyzer, create_org
 
 from driftwatch.account_mail import AccountEmailWorker
 from driftwatch.check_queue import (
@@ -61,6 +60,7 @@ from driftwatch.notifications.outbox import (
 from driftwatch.retention import prune_site_history
 from driftwatch.runner import SiteRunner
 from driftwatch.settings_store import EmailConfig
+from tests.conftest import RecordingChannel, StubAnalyzer, create_org
 
 
 class Clock:

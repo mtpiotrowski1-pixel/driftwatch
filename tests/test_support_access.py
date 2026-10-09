@@ -14,7 +14,6 @@ import pytest_asyncio
 from fastapi import FastAPI
 from openpyxl import load_workbook
 from sqlalchemy import select, text, update
-from tests.conftest import FakePicker, RecordingChannel, ScriptedCapturer, StubAnalyzer
 
 from driftwatch.api.deps import STEP_UP_COOKIE
 from driftwatch.app import create_app
@@ -42,6 +41,7 @@ from driftwatch.monitoring.usage import CostEstimate, TokenUsage
 from driftwatch.runner import RunResult
 from driftwatch.security import two_factor
 from driftwatch.security.tokens import issue_support_access_token
+from tests.conftest import FakePicker, RecordingChannel, ScriptedCapturer, StubAnalyzer
 
 _OPERATOR_EMAIL = "operator@example.com"
 _OPERATOR_PASSWORD = "public-operator-password"

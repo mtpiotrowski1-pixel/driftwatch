@@ -8,11 +8,11 @@ from dataclasses import dataclass
 import httpx
 import pytest
 import pytest_asyncio
-from tests.conftest import set_test_user_password
 
 from driftwatch.db import Database
 from driftwatch.models import User
 from driftwatch.security.passwords import hash_password
+from tests.conftest import set_test_user_password
 
 _OPERATOR_EMAIL = "admin@example.com"
 _OPERATOR_PASSWORD = "supersecret123"

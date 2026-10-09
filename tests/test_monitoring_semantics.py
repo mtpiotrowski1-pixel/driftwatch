@@ -13,7 +13,6 @@ from typing import Any
 
 import pytest
 from sqlalchemy import func, select
-from tests.conftest import ScriptedCapturer, create_org
 
 from driftwatch.db import Database
 from driftwatch.models import ChangeEvent, Site, Snapshot
@@ -23,6 +22,7 @@ from driftwatch.monitoring.differ import MAX_HTML_DIFF_CHARS, html_diff
 from driftwatch.monitoring.extractor import canonical_text, diff_blocks, extract_blocks
 from driftwatch.monitoring.linked_assets import collect_document_urls
 from driftwatch.monitoring.pipeline import CheckStatus, run_check
+from tests.conftest import ScriptedCapturer, create_org
 
 _CASES = json.loads(
     (Path(__file__).parent / "fixtures/monitoring_cases.json").read_text(encoding="utf-8-sig")

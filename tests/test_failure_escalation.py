@@ -5,13 +5,13 @@ from __future__ import annotations
 import json
 
 import httpx
-from tests.conftest import RecordingChannel, ScriptedCapturer, StubAnalyzer, create_org
 
 from driftwatch.config import Settings
 from driftwatch.db import Database
 from driftwatch.models import OrgSetting, Recipient, Setting, Site, site_recipients
 from driftwatch.monitoring.capture import CaptureError
 from driftwatch.runner import SiteRunner
+from tests.conftest import RecordingChannel, ScriptedCapturer, StubAnalyzer, create_org
 
 _PAGE = "<html><body><h1>Docs</h1><p>The body of the watched page</p></body></html>"
 

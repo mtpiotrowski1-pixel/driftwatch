@@ -5,7 +5,6 @@ from __future__ import annotations
 from datetime import UTC, datetime, timedelta
 
 import pytest
-from tests.conftest import ScriptedCapturer, StubAnalyzer, create_org
 
 from driftwatch.db import Database
 from driftwatch.enums import AnalysisStatus, NotificationMode
@@ -19,6 +18,7 @@ from driftwatch.monitoring.pipeline import (
     should_notify,
 )
 from driftwatch.retention import prune_ai_usage, prune_site_history
+from tests.conftest import ScriptedCapturer, StubAnalyzer, create_org
 
 _PAGE_V1 = "<html><body><h1>Prices</h1><p>The widget costs 10 USD today</p></body></html>"
 _PAGE_V2 = "<html><body><h1>Prices</h1><p>The widget costs 12 USD today</p></body></html>"

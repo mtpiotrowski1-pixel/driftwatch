@@ -4,12 +4,12 @@ from __future__ import annotations
 
 import httpx
 import pytest
-from tests.conftest import set_test_user_password
 
 from driftwatch.api.deps import STEP_UP_COOKIE
 from driftwatch.db import Database
 from driftwatch.models import AuditEvent, User
 from driftwatch.security import two_factor
+from tests.conftest import set_test_user_password
 
 
 async def _step_up(

@@ -7,7 +7,6 @@ from datetime import UTC, datetime, timedelta
 
 import pytest
 from sqlalchemy import select
-from tests.conftest import RecordingChannel, create_org
 
 from driftwatch.db import Database
 from driftwatch.enums import (
@@ -39,6 +38,7 @@ from driftwatch.notifications.outbox import (
 )
 from driftwatch.security.crypto import SecretBox
 from driftwatch.settings_store import WebhookConfig
+from tests.conftest import RecordingChannel, create_org
 
 
 class FailOnceChannel:

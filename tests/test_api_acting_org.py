@@ -5,9 +5,9 @@ from __future__ import annotations
 
 import httpx
 import pytest
-from tests.conftest import set_test_user_password
 
 from driftwatch.db import Database
+from tests.conftest import set_test_user_password
 
 _SUPERADMIN = ("admin@example.com", "supersecret123")
 

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import httpx
+
 from tests.conftest import ScriptedCapturer
 
 _PAGE_V1 = "<html><body><h1>Docs</h1><p>The first version of the page body</p></body></html>"

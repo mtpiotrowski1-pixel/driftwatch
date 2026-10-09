@@ -9,7 +9,6 @@ from datetime import UTC, datetime, timedelta
 import httpx
 import pytest
 from sqlalchemy import select
-from tests.conftest import create_org
 
 from driftwatch.db import Database
 from driftwatch.models import AIUsage, AnalysisRun, ChangeEvent, Site, Snapshot
@@ -17,6 +16,7 @@ from driftwatch.monitoring.analysis_ownership import AnalysisOwnershipLost
 from driftwatch.monitoring.analyzer import Analysis
 from driftwatch.monitoring.pipeline import analyze_change
 from driftwatch.monitoring.usage import TokenUsage, configured_prices, estimate_cost
+from tests.conftest import create_org
 
 
 class InspectingAnalyzer:

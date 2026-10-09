@@ -7,10 +7,10 @@ from typing import Any
 
 import httpx
 import pytest_asyncio
-from tests.conftest import set_test_user_password
 
 from driftwatch.db import Database
 from driftwatch.models import BillingPrice, Plan
+from tests.conftest import set_test_user_password
 
 
 async def _step_up(client: httpx.AsyncClient, organization_id: int | None = None) -> None:
