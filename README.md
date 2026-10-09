@@ -21,9 +21,9 @@ successful capture establishes a baseline rather than inventing a change.
 
 [Interface gallery](docs/screenshots/README.md) shows the desktop and mobile UI
 from an isolated instance with synthetic data and scripted capture, AI and
-delivery adapters. The [brand kit](brand-kit/README.pl.md) includes the generated
-logo, backgrounds, original prompts and export recipes. Body and display fonts
-are served locally; their upstream sources and licenses are included in
+delivery adapters. The [brand kit](brand-kit/README.pl.md) preserves artwork
+originals, concise generation provenance and optional export recipes. Body and
+display fonts are served locally; their upstream sources and licenses are included in
 [web/public/fonts](web/public/fonts).
 
 ## Quick start with Docker
@@ -128,8 +128,6 @@ optional and may be wrong. Unknown model pricing is reported as unknown.
 - Administrator guide: [English](docs/ADMIN_GUIDE.en.md), [Polski](docs/ADMIN_GUIDE.pl.md)
 - [Backup, restore and recovery](docs/RECOVERY.md), [Contributing](CONTRIBUTING.md)
 - [Security and secret scanning](SECURITY.md), [documentation index](docs/README.md)
-- [Public repository checklist](docs/PUBLICATION.md): source, history, licensing,
-  reproducible checks and the distinction between publishing code and hosting it
 
 ## License
 

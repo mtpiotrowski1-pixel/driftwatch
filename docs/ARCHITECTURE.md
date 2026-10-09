@@ -338,6 +338,6 @@ server banners, escape attacker-controlled diff content, neutralize spreadsheet
 formula injection, and return stable error codes with request IDs.
 
 The deployment boundary is documented in [DEPLOY.md](DEPLOY.md). The
-[deployment checklist](PRODUCTION_READINESS.pl.md) records environment-specific
+[deployment checklist](DEPLOY.md#deployment-verification) records environment-specific
 verification beyond the controlled repository tests. [Recovery](RECOVERY.md)
 describes backup restoration and the unfinished work that must survive it.

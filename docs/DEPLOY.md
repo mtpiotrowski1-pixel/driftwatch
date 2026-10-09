@@ -93,12 +93,12 @@ the policy target is `capture-firewall`. Source builders that build the last
 Docker stage may use `DRIFTWATCH_IMAGE_TARGET`. The worker must never inherit
 API service variables through a shared platform variable group.
 
-Railway/Supabase configuration files are integration starting points. A platform
-that cannot supply the dedicated namespace and `NET_ADMIN` firewall needs an
-equivalent tested network policy/egress proxy before browser exposure. Do not
-claim managed hosting is safe merely because the isolated browser image boots.
-In-process capture removes the credential and network boundary and is only a
-trusted local development compatibility mode.
+On another hosting platform, configure the API, browser worker, firewall and
+database separately. A platform that cannot supply the dedicated namespace and
+`NET_ADMIN` firewall needs an equivalent tested network policy or egress proxy
+before browser exposure. Verify the boundary on that platform with actual
+socket tests. In-process capture removes the credential and network boundary
+and is only a trusted local development compatibility mode.
 
 ## Release evidence
 
@@ -107,3 +107,33 @@ frontend, image scans/SBOMs, and the real Docker smoke. Passing repository CI do
 not certify an operator's backups, public ingress, configured providers or
 capacity. Record the exact source revision/image digest and deployment checks.
 See [recovery](RECOVERY.md), [security](../SECURITY.md) and [FAQ](FAQ.md).
+
+## Deployment verification
+
+Before exposing an installation, check these behaviors in that environment and
+keep the actual results with the source revision, image digests and date:
+
+- Build the SPA and all three images from the same revision using the committed
+  locks. Run current Python, npm and image dependency audits and the secret scan.
+- Complete the first-owner setup, confirm further signup is closed, and exercise
+  MFA, step-up and organization-bound support access. Confirm a user cannot read
+  or change another organization's resources.
+- Confirm HTTPS, trusted origins, secure cookies and the unexposed worker/database.
+  Verify that the credential-free, read-only browser worker blocks forbidden
+  destinations at the socket level; check the API's separate egress policy too.
+- Run an owned page through baseline, content change, HTTP failure and recovery
+  with AI disabled and Every change notifications. Check that failures retain the
+  baseline and unfinished work. Restart during a check and verify lease recovery
+  without a stale result or an unlimited retry loop.
+- Test each configured delivery provider and review retry exhaustion and ambiguous
+  provider acceptance before relying on alerts. If AI is enabled, verify its
+  input, rules, quota and error recovery; unknown pricing remains unknown.
+- Restore a backup into a separate instance with the matching keys and providers
+  disabled. Verify migrations, accounts, tenant isolation, branding and a local
+  monitor; measure recovery time and the recoverable data window.
+- Verify readiness JSON and Operations, and arrange checks for disk/WAL growth,
+  queue age, dead jobs, delivery errors and worker availability.
+
+Billing and ongoing public signup are disabled by default and are not needed for
+self-hosted monitoring. Enabling them requires a configured provider and a reviewed
+customer, data-retention and legal-document lifecycle for that installation.

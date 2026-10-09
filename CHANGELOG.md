@@ -17,6 +17,11 @@ and this project adheres to
 
 ### Maintainability
 
+- Remove unused historical artwork, duplicate exports, image-generation prompt
+  transcripts and unfilled deployment worksheets from the public source tree.
+  Keep active asset sources, concise provenance, export tools and operator guides.
+- Exclude coverage, database sidecars and local agent tooling from source and
+  container builds; remove the port-based stop helper and unused hosting templates.
 - Make the regression test directory an explicit Python package so shared test
   fixtures resolve when running the `pytest` console command on a fresh checkout.
 - Declare both application and test imports as first-party for consistent Ruff

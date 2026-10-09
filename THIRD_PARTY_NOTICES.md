@@ -41,7 +41,7 @@ Their patch bytes are not relicensed by the project's PolyForm license. See
 
 ## Project artwork
 
-Original generated bitmaps, prompts and export recipes are recorded in the
-[brand kit](brand-kit/README.pl.md). Bundled fonts and any separately attributed
-third-party material remain subject to their own notices, even when used in
+Artwork originals, concise generation provenance and optional export recipes
+are preserved in the [brand kit](brand-kit/README.pl.md). Bundled fonts and any
+separately attributed third-party material remain subject to their own notices, even when used in
 the project's visual identity.

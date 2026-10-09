@@ -7,14 +7,13 @@ The interface is Polish here and also provides English translations. Desktop
 views use 1440 CSS px; mobile views use 320–375 CSS px. Chrome was at 90%
 zoom; the manifest records CSS and exported bitmap dimensions separately. Only the capture canvas outside the
 viewport is trimmed; the interface is not retouched. [manifest.json](manifest.json)
-records image hashes, geometry, fonts and the captured build from 2026-10-09.
-The three dashboard views were refreshed after improving panel opacity and
-separation. Other unchanged views retain their earlier captured build identifiers.
+records image hashes, geometry, fonts and the build captured for each view.
 
 All views use the final Emerald Portal branding generated with `image_gen` on
 2026-10-08. The [brand kit](../../brand-kit/README.pl.md) preserves the source
-images, export recipes and prompts. Decorative artwork stays behind actual
-HTML controls and text; it does not represent live monitoring results.
+images, concise generation provenance and optional export recipes. Decorative
+artwork stays behind actual HTML controls and text; it does not represent live
+monitoring results.
 
 ## Sign in and public landing page
 

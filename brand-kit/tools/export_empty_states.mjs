@@ -1,6 +1,7 @@
-/** Export committed imagegen originals without redrawing or flattening alpha. */
+/** Export the decorative empty-state originals without flattening alpha. */
+import { createHash } from "node:crypto";
 import { createRequire } from "node:module";
-import { mkdir, copyFile, stat, writeFile } from "node:fs/promises";
+import { mkdir, readFile, stat, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { parseArgs } from "node:util";
@@ -9,39 +10,43 @@ const { values } = parseArgs({ options: { "sharp-module": { type: "string" } } }
 const require = createRequire(import.meta.url);
 const sharp = require(values["sharp-module"] || "sharp");
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const publicRoot = path.resolve(root, "../web/public/brand/illustrations");
+const repoRoot = path.resolve(root, "..");
+const publicRoot = path.join(repoRoot, "web/public/brand/illustrations");
 const sourceRoot = path.join(root, "illustrations/v2/sources");
-const exportRoot = path.join(root, "illustrations/v2/web");
-await mkdir(exportRoot, { recursive: true });
+const manifestPath = path.join(root, "manifest.json");
+const manifest = JSON.parse(await readFile(manifestPath, "utf8"));
 await mkdir(publicRoot, { recursive: true });
 
-const exports = [];
 for (const variant of ["workspace", "delivery"]) {
   const source = path.join(sourceRoot, `empty-${variant}.png`);
   const metadata = await sharp(source).metadata();
-  const statistics = await sharp(source).stats();
-  const alpha = statistics.channels[3];
+  const alpha = (await sharp(source).stats()).channels[3];
   if (!metadata.hasAlpha || !alpha || alpha.min !== 0 || alpha.max < 1) {
-    throw new Error(`Expected genuine transparent alpha in ${variant} source`);
+    throw new Error(`Expected transparent alpha in ${variant} source`);
   }
+  const outputs = [];
   for (const width of [480, 960]) {
     for (const format of ["png", "webp"]) {
-      const name = `empty-${variant}-${width}.${format}`;
-      const target = path.join(exportRoot, name);
+      const target = path.join(publicRoot, `empty-${variant}-${width}.${format}`);
       let pipeline = sharp(source).resize({ width, withoutEnlargement: true });
       pipeline = format === "webp"
         ? pipeline.webp({ quality: 84, alphaQuality: 100, effort: 6 })
         : pipeline.png({ compressionLevel: 9 });
       await pipeline.toFile(target);
-      await copyFile(target, path.join(publicRoot, name));
       const final = await sharp(target).metadata();
       const finalAlpha = (await sharp(target).stats()).channels[3];
       if (!final.hasAlpha || !finalAlpha || finalAlpha.min !== 0 || finalAlpha.max < 1) {
-        throw new Error(`Export lost transparent alpha: ${name}`);
+        throw new Error(`Export lost transparent alpha: ${path.basename(target)}`);
       }
-      exports.push({ name, width: final.width, height: final.height, bytes: (await stat(target)).size });
+      outputs.push({
+        path: path.relative(repoRoot, target).split(path.sep).join("/"),
+        bytes: (await stat(target)).size,
+        sha256: createHash("sha256").update(await readFile(target)).digest("hex"),
+      });
     }
   }
+  const asset = manifest.assets.find((item) => item.id === `empty-${variant}`);
+  asset.source_sha256 = createHash("sha256").update(await readFile(source)).digest("hex");
+  asset.outputs = outputs.sort((left, right) => left.path.localeCompare(right.path));
 }
-await writeFile(path.join(exportRoot, "exports.json"), JSON.stringify(exports, null, 2) + "\n");
-process.stdout.write(JSON.stringify(exports, null, 2) + "\n");
+await writeFile(manifestPath, JSON.stringify(manifest, null, 2) + "\n");

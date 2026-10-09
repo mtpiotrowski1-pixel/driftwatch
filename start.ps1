@@ -1,4 +1,4 @@
-# Uruchamia Driftwatch (serwer API + UI) na http://127.0.0.1:8000
+# Uruchamia Driftwatch (serwer API + UI) zgodnie z konfiguracja.
 # Uzycie:  .\start.ps1
 $ErrorActionPreference = "Stop"
 Set-Location -Path $PSScriptRoot

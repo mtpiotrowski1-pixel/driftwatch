@@ -24,7 +24,7 @@ an operator before it is exposed. See [installation](INSTALL.md#first-account-an
 No. Publish the source repository with its tests, design decisions, screenshots
 and documentation. Run your own copy locally; monitoring works with AI disabled.
 Billing and ongoing public registration are optional and closed by default.
-See the [public repository checklist](PUBLICATION.md) before sharing code.
+Publishing the source does not expose your local instance.
 
 ## Can I use Driftwatch commercially?
 

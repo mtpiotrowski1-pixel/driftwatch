@@ -19,19 +19,7 @@
 - [Security and secret scanning](../SECURITY.md)
 - [Image advisories and scan interpretation](IMAGE_SECURITY.md)
 - [Contributing and reproducible checks](../CONTRIBUTING.md)
-- [Preparing a public portfolio repository](PUBLICATION.md)
-
-## Deployment-specific runbooks
-
-The following Polish templates need the operator's actual environment, owners
-and measured evidence. They do not establish service guarantees by themselves.
-
-- [Disaster recovery](DISASTER_RECOVERY.pl.md)
-- [Incident response](INCIDENT_RESPONSE.pl.md)
-- [Data, processors and retention](OPERATIONS_COMPLIANCE.pl.md)
-- [Deployment verification checklist](PRODUCTION_READINESS.pl.md)
 
 Keep instructions aligned with implemented behavior. After changing capture,
 providers, authorization, schema or deployment topology, rerun the corresponding
-tests and update the affected guide. Historical private audits are not part of
-the public product documentation.
+tests and update the affected guide.

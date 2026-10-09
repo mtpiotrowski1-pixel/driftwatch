@@ -77,6 +77,5 @@ the affected verification. Tests that failed with disk-write errors provide no
 evidence about program correctness. Docker images, browser downloads, build
 caches, backups and WAL all consume space beyond the database itself.
 
-See [installation](INSTALL.md), [deployment](DEPLOY.md) and the detailed Polish
-[disaster recovery runbook](DISASTER_RECOVERY.pl.md). The runbook's RPO/RTO fields
-are deployment decisions, not promises made by this repository.
+See [installation](INSTALL.md) and [deployment](DEPLOY.md). Measure recovery time
+and the recoverable data window on your own installation before relying on backups.
