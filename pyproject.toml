@@ -41,7 +41,7 @@ dependencies = [
     "jinja2>=3.1",
     "email-validator>=2.2",
     "playwright>=1.63",
-    "segno>=1.6",
+    "segno>=1.6.6",
 ]
 
 [project.optional-dependencies]
