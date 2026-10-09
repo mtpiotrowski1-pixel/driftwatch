@@ -6,12 +6,14 @@ import asyncio
 import base64
 import hashlib
 import time
+from types import SimpleNamespace
 
 import jwt
 import pytest
 from cryptography.fernet import Fernet
 from pydantic import ValidationError
 
+import driftwatch.security.throttle as throttle_module
 from driftwatch.config import INSECURE_SECRET_KEY, Settings
 from driftwatch.security.crypto import SecretBox
 from driftwatch.security.passwords import hash_password, verify_password
@@ -21,13 +23,16 @@ from driftwatch.security.tokens import SessionError, issue_session, read_session
 _SESSION_GENERATION = "2f8d2a36-9de4-4b61-9f0e-0b5fe35b19cf"
 
 
-async def test_login_throttle_sweeps_aged_out_keys() -> None:
+async def test_login_throttle_sweeps_aged_out_keys(monkeypatch: pytest.MonkeyPatch) -> None:
+    now = 1_000.0
+    monkeypatch.setattr(throttle_module, "time", SimpleNamespace(monotonic=lambda: now))
     throttle = LoginThrottle(window_seconds=0.05)
     for index in range(_SWEEP_THRESHOLD + 50):
         await throttle.record_failure(f"ip-{index}")
-    await asyncio.sleep(0.1)  # let every recorded failure age out of the window
+    assert len(throttle._failures) == _SWEEP_THRESHOLD + 50
+    now += 0.1  # let every recorded failure age out after the map exceeds the sweep threshold
     await throttle.record_failure("fresh")  # size-gated sweep drops the stale keys
-    assert len(throttle._failures) <= 2
+    assert set(throttle._failures) == {"fresh"}
 
 
 async def test_login_throttle_respects_a_per_call_max() -> None:

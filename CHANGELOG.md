@@ -23,6 +23,8 @@ and this project adheres to
   checks from the repository or an unrelated working directory.
 - Isolate API and SPA test fixtures from local frontend build output; verify the
   removed administrator password endpoint with and without a frontend bundle.
+- Use a controlled clock in the throttle cleanup regression so slow test runners
+  cannot expire entries before the cleanup precondition has been established.
 - Split the settings page into configuration domains, account controls,
   operations and usage views, with a shared local draft and pure payload model.
   Preserve step-up, unsaved-change protection and one-time MFA recovery behavior.
