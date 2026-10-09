@@ -6,11 +6,13 @@ from __future__ import annotations
 from pathlib import Path
 
 import httpx
+import pytest
 from fastapi import FastAPI
 
 import driftwatch.app as app_module
 
 
+@pytest.mark.parametrize("frontend_bundle", [True], indirect=True)
 async def test_unknown_api_path_is_a_clean_404(client: httpx.AsyncClient) -> None:
     response = await client.get("/api/does-not-exist")
 
@@ -19,13 +21,23 @@ async def test_unknown_api_path_is_a_clean_404(client: httpx.AsyncClient) -> Non
     assert "text/html" not in response.headers.get("content-type", "")
 
 
+@pytest.mark.parametrize("frontend_bundle", [True], indirect=True)
 async def test_client_route_falls_back_to_the_spa_index(client: httpx.AsyncClient) -> None:
     response = await client.get("/dashboard")
 
     assert response.status_code == 200
     assert "text/html" in response.headers.get("content-type", "")
+    assert response.text == "<!doctype html><html><body>Owned test frontend</body></html>"
 
 
+async def test_api_only_runtime_does_not_serve_spa(client: httpx.AsyncClient) -> None:
+    response = await client.get("/dashboard")
+
+    assert response.status_code == 404
+    assert "application/json" in response.headers["content-type"]
+
+
+@pytest.mark.parametrize("frontend_bundle", [True], indirect=True)
 async def test_real_api_route_keeps_its_own_status(client: httpx.AsyncClient) -> None:
     # The /api guard must only catch unmatched paths; a real but unauthenticated
     # route still answers 401, proving the guard does not shadow live endpoints.

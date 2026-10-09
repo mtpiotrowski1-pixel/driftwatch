@@ -21,6 +21,8 @@ and this project adheres to
   fixtures resolve when running the `pytest` console command on a fresh checkout.
 - Declare both application and test imports as first-party for consistent Ruff
   checks from the repository or an unrelated working directory.
+- Isolate API and SPA test fixtures from local frontend build output; verify the
+  removed administrator password endpoint with and without a frontend bundle.
 - Split the settings page into configuration domains, account controls,
   operations and usage views, with a shared local draft and pure payload model.
   Preserve step-up, unsaved-change protection and one-time MFA recovery behavior.

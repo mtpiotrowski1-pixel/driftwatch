@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import ipaddress
 from collections.abc import AsyncIterator
+from pathlib import Path
 
 import httpx
 import pytest
@@ -248,6 +249,30 @@ def channel() -> RecordingChannel:
     return RecordingChannel()
 
 
+@pytest.fixture
+def frontend_bundle(
+    request: pytest.FixtureRequest,
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> bool:
+    """Isolate SPA discovery; opt in with an indirect ``True`` parameter."""
+    import driftwatch.app as app_module
+
+    runtime_root = tmp_path / "frontend-runtime"
+    runtime_root.mkdir()
+    monkeypatch.setattr(app_module, "PROJECT_ROOT", runtime_root)
+    monkeypatch.chdir(runtime_root)
+    enabled = bool(getattr(request, "param", False))
+    if enabled:
+        dist = runtime_root / "web" / "dist"
+        (dist / "assets").mkdir(parents=True)
+        (dist / "index.html").write_text(
+            "<!doctype html><html><body>Owned test frontend</body></html>",
+            encoding="utf-8",
+        )
+    return enabled
+
+
 @pytest_asyncio.fixture
 async def client(
     settings: Settings,
@@ -255,6 +280,7 @@ async def client(
     analyzer: StubAnalyzer,
     channel: RecordingChannel,
     picker: FakePicker,
+    frontend_bundle: bool,
 ) -> AsyncIterator[httpx.AsyncClient]:
     from driftwatch.app import create_app
 

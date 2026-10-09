@@ -6,6 +6,7 @@ import re
 
 import httpx
 import jwt
+import pytest
 from sqlalchemy import select
 
 from driftwatch.account_mail import AccountEmailWorker
@@ -187,15 +188,41 @@ async def test_resending_invitation_is_step_up_gated_and_rate_limited(
     assert all("#token=" not in str(event) for event in invitation_events)
 
 
+@pytest.mark.parametrize(
+    ("frontend_bundle", "expected_status"),
+    [(False, 404), (True, 405)],
+    indirect=["frontend_bundle"],
+    ids=["api-only", "with-spa"],
+)
 async def test_manual_admin_password_endpoint_is_removed(
     admin_client: httpx.AsyncClient,
+    database: Database,
+    expected_status: int,
 ) -> None:
     user_id = await _create(admin_client, "no-takeover@example.com")
+    async with database.session() as session:
+        user = await session.get(User, user_id)
+        assert user is not None
+        credentials_before = (user.password_hash, user.token_version, user.session_generation)
+
     response = await admin_client.post(
         f"/api/users/{user_id}/password",
         json={"new_password": "administrator-chosen-password"},
     )
-    assert response.status_code == 405
+    assert response.status_code == expected_status
+    assert "application/json" in response.headers["content-type"]
+    assert response.json()["detail"] == (
+        "Not Found" if expected_status == 404 else "Method Not Allowed"
+    )
+    async with database.session() as session:
+        user = await session.get(User, user_id)
+        assert user is not None
+        assert (
+            user.password_hash,
+            user.token_version,
+            user.session_generation,
+        ) == credentials_before
+        assert not await averify_password("administrator-chosen-password", user.password_hash)
 
 
 async def test_admin_edits_user_name_and_email(admin_client: httpx.AsyncClient) -> None:
