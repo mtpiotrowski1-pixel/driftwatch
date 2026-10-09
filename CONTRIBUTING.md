@@ -12,7 +12,22 @@ needed. Do not disable the Origin guard to resolve a proxy mismatch.
 
 ## Verification
 
-From the activated development environment:
+The installers create `.venv` without activating the current shell. From the
+repository root, activate it before running the checks and dependency commands.
+
+On Windows (PowerShell):
+
+```powershell
+.\.venv\Scripts\Activate.ps1
+```
+
+On Linux:
+
+```sh
+. .venv/bin/activate
+```
+
+From that activated development environment:
 
 ```sh
 ruff format --check .

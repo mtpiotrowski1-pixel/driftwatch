@@ -17,6 +17,9 @@ and this project adheres to
 
 ### Maintainability
 
+- Correct the architecture diagram's API-to-database and API-to-worker boundaries.
+  Use the project interpreter in demo commands, explain development environment
+  activation and link operator guidance to the existing deployment verification.
 - Remove unused historical artwork, duplicate exports, image-generation prompt
   transcripts and unfilled deployment worksheets from the public source tree.
   Keep active asset sources, concise provenance, export tools and operator guides.

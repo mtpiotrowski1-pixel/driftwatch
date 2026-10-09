@@ -86,7 +86,9 @@ otherwise.
   registration, self-serve checkout, the legal gate, and live mode are separate
   switches. Checkout consent is bound to versioned HTTPS Terms/Privacy artifacts
   and their SHA-256 digests. Enabling a flag is not evidence of legal, finance,
-  or security approval; complete the release checklist before live payments.
+  or security approval. Before live payments, complete the
+  [deployment verification](docs/DEPLOY.md#deployment-verification) and have the
+  deployment operator review the provider configuration.
 - Public health JSON exposes status, routing readiness and coarse dependency
   states; a capture outage may return HTTP 200 with `status=degraded`.
   Detailed database, scheduler, worker, queue, storage, and maintenance state is

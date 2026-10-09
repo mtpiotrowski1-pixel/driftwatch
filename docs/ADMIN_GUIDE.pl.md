@@ -300,8 +300,10 @@ ustaw go zgodnie z [instrukcją wdrożenia](DEPLOY.md).
   udostępniany jako produktowy dziennik audytowy.
 - **Rozliczenia** — w kontekście organizacji pokazują status subskrypcji,
   obowiązujące uprawnienie oraz hostowany checkout/portal. Checkout i portal
-  wymagają step-up. Trybu live nie włączaj przed ukończeniem checklisty
-  przedprodukcyjnej i przeglądem osoby zarządzającej wdrożeniem oraz dostawcą.
+  wymagają step-up. Trybu live nie włączaj przed ukończeniem
+  [weryfikacji wdrożenia](DEPLOY.md#deployment-verification) i przeglądem
+  konfiguracji dostawcy przez operatora wdrożenia. Te kontrole techniczne nie
+  zastępują wymaganej akceptacji prawnej, finansowej ani bezpieczeństwa.
 - **Pobierz kopię zapasową** — spójna migawka bazy SQLite (wymaga step-up; zawiera
   hashe haseł i zaszyfrowane sekrety, więc trzymaj go bezpiecznie). Najlepiej
   pobierać w spokojnym momencie i przechowywać kopie poza serwerem.

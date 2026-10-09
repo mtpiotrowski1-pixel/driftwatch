@@ -307,8 +307,10 @@ the [deployment instructions](DEPLOY.md).
   trail.
 - **Billing** — inside an organization, shows subscription status, effective
   access, and hosted checkout/portal. Checkout and portal require step-up. Do not
-  enable live mode before completing the production checklist and a review by
-  the person operating the deployment and configuring the provider.
+  enable live mode before completing the
+  [deployment verification](DEPLOY.md#deployment-verification) and having the
+  deployment operator review the provider configuration. These technical checks
+  do not replace required legal, finance, or security approval.
 - **Download backup** — a consistent snapshot of the SQLite database (requires
   step-up; it contains password hashes and encrypted secrets, so store it
   safely). Best downloaded at a quiet moment and kept off the server.

@@ -4,19 +4,12 @@
 
 Driftwatch has two application runtime targets, a firewall target and one durable database:
 
-```text
-browser / API client
-        |
-        v
-FastAPI + SPA + scheduler
-        |  SQLAlchemy / Alembic
-        v
-SQLite or Postgres
-        ^
-        | authenticated, bounded capture contract
-isolated Playwright capture-worker
-        | shared network namespace, no shared application credentials
-dedicated packet firewall (NET_ADMIN only)
+```mermaid
+flowchart TD
+    Client["Browser / API client"] --> API["FastAPI + SPA + scheduler"]
+    API <-->|"SQLAlchemy / Alembic"| Database["SQLite or PostgreSQL"]
+    API <-->|"Authenticated, bounded capture HTTP"| Worker["Isolated Playwright capture worker"]
+    Worker ---|"Shared network namespace"| Firewall["Dedicated packet firewall (NET_ADMIN only)"]
 ```
 
 The API process serves the JSON API and built React SPA. Its scheduler reserves
