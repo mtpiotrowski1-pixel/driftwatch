@@ -7,7 +7,7 @@ COPY . .
 RUN tar -czf /driftwatch-source.tar.gz -C /source driftwatch
 
 # --- Stage 1: build the SPA -------------------------------------------------
-FROM node:22-slim@sha256:6c74791e557ce11fc957704f6d4fe134a7bc8d6f5ca4403205b2966bd488f6b3 AS web
+FROM node:25-slim@sha256:81db02c4b671288a03915da9534dbd54f96d0e7c24d80ccc54f5b36b2e684370 AS web
 WORKDIR /web
 COPY web/package.json web/package-lock.json ./
 RUN npm ci
