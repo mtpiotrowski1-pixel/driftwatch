@@ -17,6 +17,8 @@ and this project adheres to
 
 ### Maintainability
 
+- Make the regression test directory an explicit Python package so shared test
+  fixtures resolve when running the `pytest` console command on a fresh checkout.
 - Split the settings page into configuration domains, account controls,
   operations and usage views, with a shared local draft and pure payload model.
   Preserve step-up, unsaved-change protection and one-time MFA recovery behavior.

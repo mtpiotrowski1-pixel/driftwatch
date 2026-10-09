@@ -4,11 +4,11 @@ from __future__ import annotations
 
 import httpx
 
-from conftest import FakePicker, RecordingChannel, ScriptedCapturer, StubAnalyzer
 from driftwatch.config import Settings
 from driftwatch.models import Organization, User
 from driftwatch.security import two_factor
 from driftwatch.security.passwords import ahash_password
+from tests.conftest import FakePicker, RecordingChannel, ScriptedCapturer, StubAnalyzer
 
 
 async def _register(client: httpx.AsyncClient, email: str = "user@example.com") -> None:

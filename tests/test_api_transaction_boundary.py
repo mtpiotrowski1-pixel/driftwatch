@@ -22,7 +22,6 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.types import Message, Receive, Scope, Send
 
-from conftest import FakePicker, RecordingChannel, ScriptedCapturer, StubAnalyzer
 from driftwatch.api.deps import PENDING_TOTP_COOKIE, SESSION_COOKIE
 from driftwatch.app import create_app
 from driftwatch.config import Settings
@@ -30,6 +29,7 @@ from driftwatch.models import AuditEvent, Project, User
 from driftwatch.security import two_factor
 from driftwatch.security.passwords import averify_password
 from driftwatch.security.tokens import read_pending_login
+from tests.conftest import FakePicker, RecordingChannel, ScriptedCapturer, StubAnalyzer
 
 _EMAIL = "transaction-owner@example.com"
 _PASSWORD = "owned-transaction-password-123"

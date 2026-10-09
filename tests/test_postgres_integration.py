@@ -18,7 +18,6 @@ from sqlalchemy import func, select, text
 from sqlalchemy.exc import DBAPIError
 
 import driftwatch.billing.service as billing_service
-from conftest import RecordingChannel
 from driftwatch.account_mail import AccountEmailWorker, enqueue_account_invitation
 from driftwatch.billing.access import lock_organization_access
 from driftwatch.billing.plan_contract import lock_plan_contract
@@ -47,6 +46,7 @@ from driftwatch.models import (
     User,
 )
 from driftwatch.quota import reserve_member_slot, reserve_site_slot
+from tests.conftest import RecordingChannel
 
 _URL = os.environ.get("DRIFTWATCH_TEST_POSTGRES_URL")
 pytestmark = pytest.mark.skipif(not _URL, reason="Postgres integration URL is not configured")

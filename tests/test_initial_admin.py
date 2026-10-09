@@ -14,13 +14,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.types import Message, Receive, Scope, Send
 
 import driftwatch.api.auth as auth_api
-from conftest import FakePicker, RecordingChannel, ScriptedCapturer, StubAnalyzer
 from driftwatch.app import create_app
 from driftwatch.config import Settings
 from driftwatch.db import Database
 from driftwatch.models import InstanceBootstrap, Organization, User
 from driftwatch.security import two_factor
 from driftwatch.seed import seed_admin
+from tests.conftest import FakePicker, RecordingChannel, ScriptedCapturer, StubAnalyzer
 
 _PASSWORD = "owned-test-password-123"
 
