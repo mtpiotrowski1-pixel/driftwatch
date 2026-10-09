@@ -1,0 +1,2 @@
+# The installer is upgraded before consuming application/build locks.
+pip==26.2.1

@@ -1,0 +1,103 @@
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="960"
+  height="640"
+  viewBox="0 0 960 640"
+  fill="none"
+  aria-hidden="true"
+  focusable="false"
+  shape-rendering="geometricPrecision"
+>
+  <style>
+    .dw-surface { fill: var(--dw-surface,#FBFCFA); }
+    .dw-panel { fill: var(--dw-panel,#EEF3ED); }
+    .dw-ink { fill: var(--dw-ink,#18211B); }
+    .dw-muted { fill: var(--dw-muted,#879789); }
+    .dw-accent { fill: var(--dw-accent,#B4E653); }
+    .dw-signal { fill: var(--dw-signal,#36B8AD); }
+    .dw-outline {
+      fill: none;
+      stroke: var(--dw-line,#C8D3C9);
+      vector-effect: non-scaling-stroke;
+    }
+    .dw-ink-line {
+      fill: none;
+      stroke: var(--dw-ink,#18211B);
+      vector-effect: non-scaling-stroke;
+    }
+    .dw-accent-line {
+      fill: none;
+      stroke: var(--dw-accent,#B4E653);
+      vector-effect: non-scaling-stroke;
+    }
+    .dw-signal-line {
+      fill: none;
+      stroke: var(--dw-signal,#36B8AD);
+      vector-effect: non-scaling-stroke;
+    }
+  </style>
+
+  <circle class="dw-accent" cx="134" cy="170" r="4" opacity=".72" />
+  <circle class="dw-signal" cx="826" cy="461" r="4" opacity=".62" />
+  <circle class="dw-muted" cx="814" cy="154" r="3" opacity=".42" />
+
+  <rect class="dw-panel" x="178" y="116" width="634" height="438" rx="32" opacity=".62" />
+  <rect class="dw-surface" x="156" y="94" width="648" height="446" rx="32" />
+  <rect class="dw-outline" x="156.75" y="94.75" width="646.5" height="444.5" rx="31.25" stroke-width="1.5" />
+  <path class="dw-outline" d="M326.5 95v444" stroke-width="1.5" />
+
+  <rect class="dw-panel" x="183" y="126" width="116" height="58" rx="17" />
+  <rect class="dw-accent" x="197" y="140" width="30" height="30" rx="10" />
+  <path class="dw-ink-line" d="M206 155h12M212 149v12" stroke-width="2" stroke-linecap="round" opacity=".75" />
+  <rect class="dw-muted" x="239" y="143" width="43" height="7" rx="3.5" opacity=".48" />
+  <rect class="dw-muted" x="239" y="157" width="30" height="6" rx="3" opacity=".28" />
+
+  <path class="dw-outline" d="M212 218h62M212 246h46M212 274h71" stroke-width="7" stroke-linecap="round" opacity=".72" />
+  <circle class="dw-signal" cx="197" cy="218" r="5" />
+  <circle class="dw-muted" cx="197" cy="246" r="5" opacity=".44" />
+  <circle class="dw-muted" cx="197" cy="274" r="5" opacity=".28" />
+
+  <path class="dw-outline" d="M197 336v94c0 17 13 30 30 30h39" stroke-width="2" stroke-linecap="round" />
+  <circle class="dw-surface" cx="197" cy="336" r="14" />
+  <circle class="dw-outline" cx="197" cy="336" r="13.25" stroke-width="1.5" />
+  <circle class="dw-signal" cx="197" cy="336" r="5" />
+  <circle class="dw-accent" cx="266" cy="460" r="5" />
+
+  <rect class="dw-panel" x="354" y="126" width="422" height="94" rx="22" />
+  <rect class="dw-signal" x="374" y="148" width="48" height="48" rx="15" opacity=".16" />
+  <circle class="dw-signal" cx="398" cy="172" r="11" />
+  <circle class="dw-surface" cx="398" cy="172" r="4" />
+  <rect class="dw-ink" x="442" y="151" width="118" height="10" rx="5" opacity=".78" />
+  <rect class="dw-muted" x="442" y="175" width="168" height="7" rx="3.5" opacity=".34" />
+  <rect class="dw-muted" x="442" y="190" width="108" height="7" rx="3.5" opacity=".22" />
+  <path class="dw-outline" d="M697 151h51M697 172h51M697 193h51" stroke-width="7" stroke-linecap="round" opacity=".72" />
+
+  <path class="dw-outline" d="M375 254H755" stroke-width="1.5" stroke-linecap="round" />
+  <circle class="dw-signal" cx="375" cy="254" r="5" />
+  <circle class="dw-accent" cx="755" cy="254" r="5" />
+
+  <rect class="dw-surface" x="354" y="284" width="196" height="102" rx="20" />
+  <rect class="dw-outline" x="354.75" y="284.75" width="194.5" height="100.5" rx="19.25" stroke-width="1.5" />
+  <rect class="dw-surface" x="572" y="284" width="204" height="102" rx="20" />
+  <rect class="dw-outline" x="572.75" y="284.75" width="202.5" height="100.5" rx="19.25" stroke-width="1.5" />
+  <rect class="dw-surface" x="354" y="408" width="196" height="102" rx="20" />
+  <rect class="dw-outline" x="354.75" y="408.75" width="194.5" height="100.5" rx="19.25" stroke-width="1.5" />
+  <rect class="dw-surface" x="572" y="408" width="204" height="102" rx="20" />
+  <rect class="dw-outline" x="572.75" y="408.75" width="202.5" height="100.5" rx="19.25" stroke-width="1.5" />
+
+  <rect class="dw-accent" x="374" y="305" width="32" height="32" rx="10" />
+  <rect class="dw-signal" x="592" y="305" width="32" height="32" rx="10" opacity=".78" />
+  <rect class="dw-signal" x="374" y="429" width="32" height="32" rx="10" opacity=".34" />
+  <rect class="dw-accent" x="592" y="429" width="32" height="32" rx="10" opacity=".5" />
+
+  <rect class="dw-ink" x="422" y="307" width="76" height="8" rx="4" opacity=".68" />
+  <rect class="dw-muted" x="422" y="326" width="102" height="6" rx="3" opacity=".3" />
+  <rect class="dw-ink" x="640" y="307" width="82" height="8" rx="4" opacity=".68" />
+  <rect class="dw-muted" x="640" y="326" width="106" height="6" rx="3" opacity=".3" />
+  <rect class="dw-ink" x="422" y="431" width="88" height="8" rx="4" opacity=".68" />
+  <rect class="dw-muted" x="422" y="450" width="102" height="6" rx="3" opacity=".3" />
+  <rect class="dw-ink" x="640" y="431" width="74" height="8" rx="4" opacity=".68" />
+  <rect class="dw-muted" x="640" y="450" width="106" height="6" rx="3" opacity=".3" />
+
+  <path class="dw-outline" d="M375 364h44M483 364h45M593 364h45M702 364h52M375 488h44M483 488h45M593 488h45M702 488h52" stroke-width="6" stroke-linecap="round" opacity=".72" />
+</svg>

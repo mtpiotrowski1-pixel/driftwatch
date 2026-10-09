@@ -1,0 +1,16 @@
+Alembic migrations for Driftwatch.
+
+The application runs `alembic upgrade head` on startup (see
+`driftwatch.db.Database.upgrade`), so a fresh database is built and an existing
+one is migrated forward automatically. A database first created by an older
+`create_all` build is adopted by stamping it to head before upgrading.
+
+To add a migration after changing the models:
+
+    alembic revision --autogenerate -m "describe the change"
+    # review the generated file in versions/, then
+    alembic upgrade head
+
+`env.py` reads the database URL from the application's settings and maps the
+async driver to its synchronous peer, so no URL needs to be set in alembic.ini.
+For PostgreSQL, install a sync driver (`psycopg`) alongside `asyncpg`.

@@ -1,0 +1,9 @@
+repos:
+  - repo: local
+    hooks:
+      - id: driftwatch-secrets
+        name: Scan staged secrets with pinned Gitleaks
+        entry: python scripts/secret_scan.py --staged
+        language: system
+        pass_filenames: false
+        always_run: true

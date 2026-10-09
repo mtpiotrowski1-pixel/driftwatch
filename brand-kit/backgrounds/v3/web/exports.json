@@ -1,0 +1,76 @@
+[
+  {
+    "source": "backgrounds/v3/sources/portal-hero-v3.png",
+    "source_sha256": "aadbb2b9e2675ef93cfbec1e32c47fabbe8be02c9f5f99a86e6f6ac13b3694d4",
+    "source_dimensions": [
+      1672,
+      941
+    ],
+    "outputs": [
+      {
+        "path": "backgrounds/v3/web/portal-hero-v3.webp",
+        "dimensions": [
+          1672,
+          941
+        ],
+        "bytes": 127046,
+        "sha256": "926e11a53b0534446476e5eae571db18a057f9d3552aca01ea518901949f0e2a"
+      },
+      {
+        "path": "backgrounds/v3/web/portal-hero-v3.jpg",
+        "dimensions": [
+          1672,
+          941
+        ],
+        "bytes": 230284,
+        "sha256": "faa9ccc2d8bfce8fe1016e6998feba78554aa4e9e085d43b109fc24cbd155436"
+      },
+      {
+        "path": "backgrounds/v3/web/portal-hero-mobile-v3.webp",
+        "dimensions": [
+          960,
+          540
+        ],
+        "bytes": 56538,
+        "sha256": "70958ef6bfb55921aedd81a0e5e8e1a1e837f541e5ad3938672c7d669d4c1f74"
+      },
+      {
+        "path": "backgrounds/v3/web/portal-hero-mobile-v3.jpg",
+        "dimensions": [
+          960,
+          540
+        ],
+        "bytes": 92457,
+        "sha256": "5e1463830da8426f72fd5cb3045acdad5ac8e8a609fdb0e18cb29aae818c6000"
+      }
+    ]
+  },
+  {
+    "source": "backgrounds/v3/sources/portal-ambient-v3.png",
+    "source_sha256": "1fd518e1008003f1db400bc12b9b60e94e9957f2af42a14b2d92c724eae6fead",
+    "source_dimensions": [
+      1672,
+      941
+    ],
+    "outputs": [
+      {
+        "path": "backgrounds/v3/web/portal-ambient-v3.webp",
+        "dimensions": [
+          1672,
+          941
+        ],
+        "bytes": 123984,
+        "sha256": "5f95eba206fe8843081009b7d7f2a084b576fd37296aa085eb98efe6a00d04ca"
+      },
+      {
+        "path": "backgrounds/v3/web/portal-ambient-v3.jpg",
+        "dimensions": [
+          1672,
+          941
+        ],
+        "bytes": 238311,
+        "sha256": "62136d68e97a30466cdac1421b2c7a7aa5af4a9b3e6586d5f05344fa343a50c8"
+      }
+    ]
+  }
+]

@@ -1,0 +1,50 @@
+[
+  {
+    "name": "empty-workspace-480.png",
+    "width": 480,
+    "height": 320,
+    "bytes": 112688
+  },
+  {
+    "name": "empty-workspace-480.webp",
+    "width": 480,
+    "height": 320,
+    "bytes": 11564
+  },
+  {
+    "name": "empty-workspace-960.png",
+    "width": 960,
+    "height": 640,
+    "bytes": 433899
+  },
+  {
+    "name": "empty-workspace-960.webp",
+    "width": 960,
+    "height": 640,
+    "bytes": 29926
+  },
+  {
+    "name": "empty-delivery-480.png",
+    "width": 480,
+    "height": 320,
+    "bytes": 81121
+  },
+  {
+    "name": "empty-delivery-480.webp",
+    "width": 480,
+    "height": 320,
+    "bytes": 14118
+  },
+  {
+    "name": "empty-delivery-960.png",
+    "width": 960,
+    "height": 640,
+    "bytes": 306258
+  },
+  {
+    "name": "empty-delivery-960.webp",
+    "width": 960,
+    "height": 640,
+    "bytes": 37864
+  }
+]

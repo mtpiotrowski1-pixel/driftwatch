@@ -1,0 +1,682 @@
+@import "tailwindcss";
+
+/* Served by this installation, with the upstream OFL notices in /fonts.
+   The fonts never require a third-party request and their fallback stays usable. */
+@font-face {
+  font-family: "Source Sans 3";
+  font-style: normal;
+  font-weight: 200 900;
+  font-display: swap;
+  src: url("/fonts/source-sans-3-variable.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Source Sans 3";
+  font-style: italic;
+  font-weight: 200 900;
+  font-display: swap;
+  src: url("/fonts/source-sans-3-italic-variable.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Manrope";
+  font-style: normal;
+  font-weight: 200 800;
+  font-display: swap;
+  src: url("/fonts/manrope-variable.woff2") format("woff2");
+}
+
+@theme {
+  --font-sans:
+    "Source Sans 3", "Segoe UI Variable Text", "Segoe UI", ui-sans-serif, system-ui, -apple-system,
+    BlinkMacSystemFont, sans-serif;
+  --font-display:
+    "Manrope", "Segoe UI Variable Display", "Segoe UI", ui-sans-serif, system-ui, -apple-system,
+    BlinkMacSystemFont, sans-serif;
+  --font-mono: "Cascadia Code", "SFMono-Regular", Consolas, ui-monospace, monospace;
+  --text-xs: 0.8125rem;
+  --text-xs--line-height: 1.5;
+  --text-sm: 0.9375rem;
+  --text-sm--line-height: 1.55;
+
+  /* Existing utility names are preserved so every screen adopts the new system
+     without a risky repository-wide class migration. "ink" now describes the
+     workspace surface stack; "mist" remains the text stack. */
+  --color-ink-950: #f3f5f0;
+  --color-ink-900: #ffffff;
+  --color-ink-850: #fafbf8;
+  --color-ink-800: #edf0e9;
+  --color-ink-750: #e5e9e1;
+  --color-ink-700: #d8ded4;
+  --color-ink-600: #b8c1b5;
+  --color-line: #d8ded5;
+  --color-line-strong: #b9c3b7;
+
+  --color-mist-100: #151915;
+  --color-mist-200: #252b26;
+  --color-mist-300: #374039;
+  --color-mist-400: #424e46;
+  --color-mist-500: #48554d;
+  --color-mist-600: #4e5c53;
+
+  --color-on-art: #f7faf7;
+  --color-on-art-muted: #dce8e0;
+
+  /* Driftwatch's default signal. Tenant branding can repaint this ramp while
+     the neutral geometry and baseline/current motif stay recognisable. */
+  --color-brand-200: #e7ffb7;
+  --color-brand-300: #d5fa8a;
+  --color-brand-400: #c5f06d;
+  --color-brand-500: #b4e653;
+  --color-brand-600: #98c83a;
+  --color-brand-700: #4f651a;
+  --color-accent: #ff6b4a;
+  --color-accent-soft: #36b8ad;
+  /* Focus remains legible even when a tenant selects a pale brand accent. */
+  --color-focus: #315e2f;
+
+  --color-amber-300: #9a6200;
+  --color-amber-400: #805000;
+  --color-rose-200: #7e1730;
+  --color-rose-300: #a62340;
+  --color-rose-400: #a62340;
+  --color-emerald-400: #096445;
+
+  --radius-xl: 0.375rem;
+  --radius-2xl: 0.5rem;
+  --radius-3xl: 0.5rem;
+
+  --shadow-card: 0 1px 2px rgba(20, 28, 21, 0.06);
+  --shadow-lift: 0 10px 28px rgba(20, 28, 21, 0.1);
+  --shadow-glow: 0 8px 20px -12px color-mix(in srgb, var(--color-brand-600) 70%, transparent);
+  --shadow-halo: 0 18px 50px rgba(10, 16, 11, 0.14);
+
+  --motion-fast: 140ms;
+  --motion-panel: 220ms;
+  --motion-ease: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+:root[data-theme="emerald"] {
+  --color-brand-200: #bff7e7;
+  --color-brand-300: #7ee8cb;
+  --color-brand-400: #43d2ad;
+  --color-brand-500: #20bd98;
+  --color-brand-600: #2dae8c;
+  --color-brand-700: #0b5b49;
+  --color-accent: #ff7858;
+  --color-accent-soft: #6c9cff;
+}
+
+:root[data-theme="violet"] {
+  --color-brand-200: #eadcff;
+  --color-brand-300: #ceb0ff;
+  --color-brand-400: #be9bee;
+  --color-brand-500: #ad86e4;
+  --color-brand-600: #9a78d0;
+  --color-brand-700: #54238d;
+  --color-accent: #ff7a59;
+  --color-accent-soft: #49bfb0;
+}
+
+:root[data-theme="sunset"] {
+  --color-brand-200: #ffe2bb;
+  --color-brand-300: #ffc889;
+  --color-brand-400: #ffaa5d;
+  --color-brand-500: #f28a39;
+  --color-brand-600: #d87628;
+  --color-brand-700: #8e4614;
+  --color-accent: #db4264;
+  --color-accent-soft: #2fa9a2;
+}
+
+:root[data-theme="rose"] {
+  --color-brand-200: #ffd7e2;
+  --color-brand-300: #ffa9bf;
+  --color-brand-400: #f69bb5;
+  --color-brand-500: #ee84a1;
+  --color-brand-600: #de668a;
+  --color-brand-700: #85273f;
+  --color-accent: #2cb8aa;
+  --color-accent-soft: #789bff;
+}
+
+@layer base {
+  * {
+    border-color: var(--color-line);
+  }
+
+  html {
+    min-width: 0;
+    scroll-behavior: smooth;
+    color-scheme: light;
+  }
+
+  body {
+    margin: 0;
+    min-width: 0;
+    background: var(--color-ink-950);
+    color: var(--color-mist-300);
+    font-family: var(--font-sans);
+    font-size: 1rem;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-display);
+    letter-spacing: -0.02em;
+    text-wrap: balance;
+    line-height: 1.25;
+  }
+
+  button,
+  a,
+  input,
+  select,
+  textarea {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  button:focus-visible,
+  a:focus-visible,
+  input[type="checkbox"]:focus-visible {
+    outline: 2px solid var(--color-focus);
+    outline-offset: 2px;
+  }
+
+  .tabular-nums {
+    font-variant-numeric: tabular-nums;
+  }
+
+  ::selection {
+    background: color-mix(in srgb, var(--color-brand-500) 65%, white);
+    color: var(--color-mist-100);
+  }
+
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    border: 2px solid var(--color-ink-950);
+    border-radius: 9999px;
+    background: var(--color-ink-600);
+  }
+}
+
+.focus-on-dark {
+  --color-focus: #d8f1b7;
+}
+
+/* These local reading surfaces protect copy against any artwork pixel while
+   leaving the generated canvas visible beside and between the content. */
+.dw-art-copy {
+  border: 1px solid rgba(220, 232, 224, 0.18);
+  border-radius: 1rem;
+  background: rgba(6, 23, 17, 0.88);
+  padding: clamp(1.25rem, 2.5vw, 2rem);
+  color: var(--color-on-art);
+  box-shadow: 0 16px 48px rgba(4, 15, 11, 0.16);
+}
+
+.dw-art-copy :is(h1, h2, h3, p) {
+  overflow-wrap: anywhere;
+}
+
+.dw-wordmark,
+.dw-wordmark > span {
+  min-width: 0;
+}
+
+.dw-wordmark > span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dw-text-surface {
+  border: 1px solid rgba(255, 255, 255, 0.95);
+  border-radius: 0.75rem;
+  background: rgba(255, 255, 255, 0.96);
+  padding: 0.75rem 1rem;
+  box-shadow: var(--shadow-card);
+}
+
+.dw-auth-card {
+  border: 1px solid rgba(255, 255, 255, 0.95);
+  border-radius: 1rem;
+  background: rgba(255, 255, 255, 0.98);
+  padding: 1.5rem;
+  box-shadow: var(--shadow-halo);
+}
+
+.dw-auth-brand {
+  border: 1px solid rgba(255, 255, 255, 0.95);
+  border-radius: 0.75rem;
+  background: rgba(255, 255, 255, 0.96);
+  padding: 0.5rem 0.75rem;
+}
+
+.dw-sidebar-nav {
+  border-radius: 0.75rem;
+  background: rgba(6, 23, 17, 0.9);
+  padding: 0.375rem;
+}
+
+.dw-sidebar-account {
+  border-radius: 0.75rem;
+  background: rgba(6, 23, 17, 0.96);
+  padding: 0.75rem;
+}
+
+.dw-sidebar .dw-sidebar-nav,
+.dw-mobile-menu .dw-sidebar-nav {
+  scrollbar-width: thin;
+}
+
+.focus-on-dark .dw-language-switcher {
+  color: var(--color-on-art-muted);
+}
+
+.dw-section-heading {
+  width: fit-content;
+  max-width: 100%;
+}
+
+.dw-brand-background {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.dw-brand-background img {
+  object-position: 70% center;
+}
+
+.dw-brand-scrim {
+  position: absolute;
+  inset: 0;
+}
+
+.dw-brand-background-hero .dw-brand-scrim {
+  background: linear-gradient(90deg, rgba(5, 18, 14, 0.78), rgba(5, 18, 14, 0.28) 68%, rgba(5, 18, 14, 0.08));
+}
+
+.dw-brand-background-dark .dw-brand-scrim {
+  background: linear-gradient(90deg, rgba(5, 18, 14, 0.8), rgba(5, 18, 14, 0.52) 60%, rgba(5, 18, 14, 0.12));
+}
+
+.dw-brand-background-ambient img {
+  object-position: center;
+}
+
+.dw-brand-background-ambient .dw-brand-scrim {
+  background: linear-gradient(180deg, rgba(249, 251, 247, 0.12), rgba(249, 251, 247, 0.25) 50%, rgba(243, 245, 240, 0.64));
+}
+
+.dw-workspace {
+  background: #eef2e9;
+}
+
+.dw-workspace-art {
+  bottom: auto;
+  height: 960px;
+  max-height: 100%;
+  mask-image: linear-gradient(#000 70%, transparent);
+}
+
+.dw-workspace-content {
+  z-index: 1;
+}
+
+/* A quiet title surface protects long names and supporting copy while the
+   generated canvas remains visible around the workspace's content blocks. */
+.dw-workspace-content > div > header:not(.dw-dashboard-hero) {
+  border: 1px solid rgba(255, 255, 255, 0.85);
+  border-radius: 0.75rem;
+  background: rgba(255, 255, 255, 0.94);
+  padding: 1.25rem;
+  box-shadow: var(--shadow-card);
+}
+
+.dw-dashboard-hero {
+  background: #0b211a;
+}
+
+.dw-dashboard-hero .dw-brand-background img {
+  object-position: 78% center;
+}
+
+.dw-sidebar > :not(.dw-brand-background) {
+  position: relative;
+}
+
+.dw-sidebar-art img {
+  object-position: 85% center;
+}
+
+.dw-sidebar-art .dw-brand-scrim {
+  background: linear-gradient(180deg, rgba(5, 18, 14, 0.82), rgba(5, 18, 14, 0.58) 56%, rgba(5, 18, 14, 0.94) 75%);
+}
+
+@media (max-width: 639px) {
+  .dw-art-copy {
+    padding: 1.25rem;
+  }
+
+  .dw-brand-background-hero .dw-brand-scrim {
+    background: linear-gradient(180deg, rgba(5, 18, 14, 0.8), rgba(5, 18, 14, 0.72));
+  }
+
+  .dw-brand-background-dark .dw-brand-scrim {
+    background: linear-gradient(180deg, rgba(5, 18, 14, 0.8), rgba(5, 18, 14, 0.72));
+  }
+
+  .dw-workspace-art {
+    height: 800px;
+  }
+}
+
+@media (min-width: 640px) {
+  .dw-auth-card {
+    padding: 2rem;
+  }
+}
+
+/* Customer artwork can be entirely white. Its contrast treatment must protect
+   copy independently of the image, including the sidebar's small labels. */
+.dw-brand-background[data-custom-art="true"] .dw-brand-scrim {
+  background: rgba(5, 18, 14, 0.82);
+}
+
+.dw-sidebar-art[data-custom-art="true"] .dw-brand-scrim {
+  background: rgba(5, 18, 14, 0.95);
+}
+
+@utility glass {
+  border: 1px solid var(--color-line);
+  background: var(--color-ink-900);
+  box-shadow: var(--shadow-card);
+}
+
+@utility panel {
+  border: 1px solid var(--color-line);
+  background: var(--color-ink-850);
+}
+
+@utility card-hover {
+  transition:
+    border-color var(--motion-fast) ease,
+    box-shadow var(--motion-panel) ease,
+    background-color var(--motion-fast) ease,
+    transform var(--motion-panel) var(--motion-ease);
+
+  &:hover,
+  &:focus-within {
+    border-color: var(--color-line-strong);
+    background: var(--color-ink-850);
+    box-shadow: var(--shadow-lift);
+  }
+
+  @media (hover: hover) and (prefers-reduced-motion: no-preference) {
+    &:hover {
+      transform: translateY(-2px);
+    }
+  }
+}
+
+.dw-button {
+  transition:
+    color var(--motion-fast) ease,
+    background-color var(--motion-fast) ease,
+    border-color var(--motion-fast) ease,
+    box-shadow var(--motion-fast) ease,
+    transform var(--motion-fast) var(--motion-ease);
+}
+
+.dw-button:not(:disabled):not([aria-disabled="true"]):active {
+  transform: translateY(1px);
+}
+
+.focus-on-dark .dw-button:focus-visible {
+  --tw-ring-offset-color: #0b211a;
+}
+
+.dw-nav-link {
+  transition:
+    color var(--motion-fast) ease,
+    background-color var(--motion-fast) ease,
+    transform var(--motion-fast) var(--motion-ease);
+}
+
+.dw-logo-trace {
+  transition: opacity var(--motion-panel) ease;
+}
+
+a:hover .dw-logo-trace,
+a:focus-visible .dw-logo-trace,
+button:hover .dw-logo-trace,
+button:focus-visible .dw-logo-trace {
+  opacity: 0.72;
+}
+
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .dw-button:not(:disabled):not([aria-disabled="true"]):hover {
+    transform: translateY(-1px);
+  }
+
+  .dw-button:not(:disabled):not([aria-disabled="true"]):hover:active {
+    transform: translateY(1px);
+  }
+
+  .dw-nav-link:hover {
+    transform: translateX(2px);
+  }
+}
+
+@utility aurora {
+  background-color: var(--color-ink-950);
+  background-image:
+    linear-gradient(rgba(243, 245, 240, 0.88), rgba(243, 245, 240, 0.95)),
+    url("./assets/brand/recovery-light-signal.webp");
+  background-position: center;
+  background-size: cover;
+}
+
+/* Diff classes mirror the backend's html_diff output. The code surface remains
+   dark so added/removed lines read like evidence, not another form card. */
+.diff {
+  overflow: hidden;
+  border: 1px solid #323a33;
+  border-radius: 0.375rem;
+  background: #151915;
+  color: #e7ece7;
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  line-height: 1.58;
+}
+
+.diff-line {
+  border-left: 3px solid transparent;
+  padding: 0.2rem 0.95rem;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.diff-added {
+  border-left-color: #54d3a5;
+  background: rgba(38, 139, 101, 0.24);
+  color: #cdf4e4;
+}
+
+.diff-removed {
+  border-left-color: #ff718e;
+  background: rgba(165, 51, 76, 0.25);
+  color: #ffd8e0;
+}
+
+.diff-context {
+  color: #99a49b;
+}
+
+.diff-truncated {
+  color: #ffc66b;
+  font-style: italic;
+}
+
+/* Keep a glimpse of the following band on short laptop viewports without
+   removing evidence from the full product scene on standard-height screens. */
+@media (min-width: 1024px) and (max-height: 780px) {
+  .watch-scene .diff-context {
+    display: none;
+  }
+}
+
+@keyframes fade-rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-rise {
+  animation: fade-rise var(--motion-panel) var(--motion-ease) both;
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes fade-out {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+@keyframes panel-in {
+  from { opacity: 0; transform: translateY(6px) scale(0.985); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes panel-out {
+  from { opacity: 1; transform: translateY(0) scale(1); }
+  to { opacity: 0; transform: translateY(4px) scale(0.985); }
+}
+
+@keyframes menu-in {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes menu-out {
+  from { opacity: 1; transform: translateY(0); }
+  to { opacity: 0; transform: translateY(-4px); }
+}
+
+/* Radix Presence waits for these closing animations before removing a portal;
+   focus restoration and Escape/outside-click behavior stay with Radix. */
+.dw-overlay[data-state="open"] {
+  animation: fade-in var(--motion-panel) ease both;
+}
+
+.dw-overlay[data-state="closed"] {
+  animation: fade-out var(--motion-fast) ease both;
+  pointer-events: none;
+}
+
+.dw-dialog[data-state="open"] {
+  animation: panel-in var(--motion-panel) var(--motion-ease) both;
+}
+
+.dw-dialog[data-state="closed"] {
+  animation: panel-out var(--motion-fast) ease both;
+  pointer-events: none;
+}
+
+.dw-mobile-menu[data-state="open"] {
+  animation: menu-in var(--motion-panel) var(--motion-ease) both;
+}
+
+.dw-mobile-menu[data-state="closed"] {
+  animation: menu-out var(--motion-fast) ease both;
+  pointer-events: none;
+}
+
+.dw-demo-panel[data-state="active"] {
+  animation: fade-rise var(--motion-panel) var(--motion-ease);
+}
+
+.dw-disclosure-panel {
+  transition: opacity var(--motion-panel) ease;
+}
+
+/* Router-owned snapshots provide a true outgoing fade without retaining live
+   forms or the previous tenant's Outlet. Browsers without this API navigate
+   normally. Names remain global so there are no duplicate snapshot identities. */
+::view-transition-group(root) {
+  animation-duration: var(--motion-panel);
+}
+
+::view-transition-image-pair(root) {
+  isolation: isolate;
+}
+
+::view-transition-old(root) {
+  animation: fade-out 180ms ease both;
+  mix-blend-mode: normal;
+}
+
+::view-transition-new(root) {
+  animation: fade-in var(--motion-panel) ease both;
+  mix-blend-mode: normal;
+}
+
+@keyframes signal-ping {
+  0% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-brand-500) 50%, transparent);
+  }
+  70%,
+  100% {
+    box-shadow: 0 0 0 8px transparent;
+  }
+}
+
+.animate-signal-ping {
+  animation: signal-ping 2.4s ease-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  .dw-button,
+  .dw-nav-link,
+  .card-hover {
+    transform: none !important;
+  }
+
+  ::view-transition-group(root),
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none !important;
+  }
+}

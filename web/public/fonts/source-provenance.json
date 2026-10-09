@@ -1,0 +1,62 @@
+{
+  "license": "SIL Open Font License 1.1",
+  "modifications": "none; upstream WOFF2 bytes are distributed unchanged",
+  "runtime_external_requests": false,
+  "fonts": [
+    {
+      "file": "source-sans-3-variable.woff2",
+      "family": "Source Sans 3",
+      "intrinsic_names": [
+        "SourceSans3VF"
+      ],
+      "sha256": "5f16566f7a40d39b339ad26be151fa5a1ab1f0c2574c7a2e619765584a1acbd8",
+      "bytes": 170188,
+      "source_url": "https://raw.githubusercontent.com/adobe-fonts/source-sans/87b37a2daaed80fcb8e8ccb0085c4d72ddade12e/WOFF2/VF/SourceSans3VF-Upright.ttf.woff2",
+      "source_commit": "87b37a2daaed80fcb8e8ccb0085c4d72ddade12e",
+      "license_file": "Source-Sans-3-OFL.txt",
+      "license_sha256": "56af9b9c6715597e458284a474dc118a50a4150e9d547c70f7b4a33c3e6a9328",
+      "weight_axis": [
+        200.0,
+        900.0
+      ],
+      "polish_glyphs_verified": "ĄĆĘŁŃÓŚŹŻąćęłńóśźż"
+    },
+    {
+      "file": "source-sans-3-italic-variable.woff2",
+      "family": "Source Sans 3",
+      "intrinsic_names": [
+        "SourceSans3VF"
+      ],
+      "sha256": "b4959abc0569392f87c6c6ac612f90e3fe0104d283724189b7d8b6f61af347d3",
+      "bytes": 137996,
+      "source_url": "https://raw.githubusercontent.com/adobe-fonts/source-sans/87b37a2daaed80fcb8e8ccb0085c4d72ddade12e/WOFF2/VF/SourceSans3VF-Italic.ttf.woff2",
+      "source_commit": "87b37a2daaed80fcb8e8ccb0085c4d72ddade12e",
+      "license_file": "Source-Sans-3-OFL.txt",
+      "license_sha256": "56af9b9c6715597e458284a474dc118a50a4150e9d547c70f7b4a33c3e6a9328",
+      "weight_axis": [
+        200.0,
+        900.0
+      ],
+      "polish_glyphs_verified": "ĄĆĘŁŃÓŚŹŻąćęłńóśźż"
+    },
+    {
+      "file": "manrope-variable.woff2",
+      "family": "Manrope",
+      "intrinsic_names": [
+        "Manrope",
+        "Manrope ExtraLight"
+      ],
+      "sha256": "30b83738add8c9edd9e3450b98036a9a8fb5668d0cbd4eb0ce5fe6761197f21f",
+      "bytes": 53892,
+      "source_url": "https://raw.githubusercontent.com/googlefonts/manrope/468c0dbe38efa331b80bfe9448256abe27be44c3/fonts/webfonts/Manrope%5Bwght%5D.woff2",
+      "source_commit": "468c0dbe38efa331b80bfe9448256abe27be44c3",
+      "license_file": "Manrope-OFL.txt",
+      "license_sha256": "58172e0c0fac2cda8a37b348164bb55e44b0e69051e557e92b1d3f6910141f7b",
+      "weight_axis": [
+        200.0,
+        800.0
+      ],
+      "polish_glyphs_verified": "ĄĆĘŁŃÓŚŹŻąćęłńóśźż"
+    }
+  ]
+}

@@ -1,0 +1,44 @@
+# Refactor working notes — never ship these
+.refactor/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.venv-bootstrap/
+venv/
+*.egg-info/
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+.coverage
+.tmp/
+
+# Runtime data
+data/
+*.db
+*.log
+
+# Secrets
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+*.p12
+*.pfx
+id_rsa*
+id_ed25519*
+credentials*.json
+secrets*.json
+
+# Frontend
+web/node_modules/
+web/dist/
+*.tsbuildinfo
+
+# OS / editor / local tooling
+.DS_Store
+.idea/
+.vscode/
+.claude/

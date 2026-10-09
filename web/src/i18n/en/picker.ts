@@ -1,0 +1,55 @@
+const messages: Record<string, string> = {
+  "picker.actionClick": "Click",
+  "picker.actionFill": "Fill",
+  "picker.actionWaitFor": "Wait for",
+  "picker.actionWait": "Wait",
+  "picker.action": "Action",
+  "picker.selector": "Element",
+  "picker.value": "Value",
+  "picker.milliseconds": "Milliseconds",
+  "picker.removeStep": "Remove step",
+  "picker.addStep": "Add step",
+  "picker.pickVisually": "Pick visually",
+  "picker.recordSteps": "Record steps",
+  "picker.couldNotStart": "Could not start the picker",
+  "picker.selectionCancelled": "Selection cancelled",
+  "picker.timedOut": "The picker timed out",
+  "picker.failed": "The picker failed",
+  "picker.selectorCaptured": "Selection saved",
+  "picker.stepsRecorded": "Steps recorded",
+  "picker.openedIn": "Opened in {channel}",
+  "picker.instructionsSelect":
+    "A browser window opened on the server. Switch to it, click the area(s) to monitor, then press Save in that window.",
+  "picker.instructionsRecord":
+    "A browser window opened on the server. Switch to it, record your clicks, then press Save in that window.",
+  "picker.starting": "Starting the picker…",
+  "picker.waitingSelected": "Waiting for Save — {count} selected",
+  "picker.waitingRecorded": "Waiting for Save — {count} recorded",
+
+  "picker.dialogLead": "A real browser window just opened on the monitoring server.",
+  "picker.saveInWindow":
+    "Click Save in that window when you're done — this panel updates automatically.",
+  "picker.closePicker": "Close picker",
+  "picker.selectNothingYet": "No area picked yet — click an element in the browser window.",
+  "picker.recordNothingYet": "No steps yet — start clicking in the browser window.",
+  "picker.useManualInstead": "You can also enter it by hand in the advanced section below.",
+
+  "picker.pick.title": "Pick the area to watch",
+  "picker.pick.explainer": "Open the page and click the part you want to track. The rest is ignored.",
+  "picker.pick.action": "Open visual picker",
+  "picker.pick.selected": "Watching: {selector}",
+  "picker.pick.selectedLabel": "Selected area",
+  "picker.pick.watchingWhole": "Watching the whole page.",
+  "picker.pick.clear": "Clear",
+  "picker.pick.advanced": "Advanced — enter a CSS selector by hand",
+
+  "picker.record.title": "Record interaction steps",
+  "picker.record.explainer":
+    "Click through the page — log in, dismiss a banner, open a tab — and we'll replay it before each check.",
+  "picker.record.action": "Record steps",
+  "picker.record.clear": "Clear steps",
+  "picker.record.advanced": "Advanced — edit steps and ignore rules by hand",
+  "picker.record.count.one": "{count} step recorded",
+  "picker.record.count.other": "{count} steps recorded",
+};
+export default messages;

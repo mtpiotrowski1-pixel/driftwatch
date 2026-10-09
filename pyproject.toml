@@ -1,0 +1,91 @@
+[build-system]
+requires = ["hatchling==1.31.0", "editables==0.6"]
+build-backend = "hatchling.build"
+
+[project]
+name = "driftwatch"
+version = "1.0.0"
+description = "Watch web pages for meaningful change and get notified when it matters."
+readme = "README.md"
+requires-python = ">=3.12"
+license = "PolyForm-Noncommercial-1.0.0"
+license-files = ["LICENSE", "THIRD_PARTY_NOTICES.md"]
+authors = [{ name = "Mateusz" }]
+keywords = ["monitoring", "web-scraping", "diff", "openai", "fastapi"]
+classifiers = [
+    "Programming Language :: Python :: 3.12",
+    "Framework :: FastAPI",
+]
+
+dependencies = [
+    "fastapi>=0.121",  # Function-scoped yield dependencies commit before response headers.
+    "uvicorn[standard]>=0.32",
+    "sqlalchemy[asyncio]>=2.0.36",
+    "alembic>=1.13",
+    "aiosqlite>=0.20",
+    # Postgres (e.g. Supabase): asyncpg drives the app, psycopg drives Alembic
+    # (its migrations run synchronously). Unused on the default SQLite backend.
+    "asyncpg>=0.30",
+    "psycopg[binary]>=3.2",
+    "pydantic>=2.9",
+    "pydantic-settings>=2.6",
+    "PyJWT>=2.15",
+    "argon2-cffi>=23.1",
+    "cryptography>=50.0.2",
+    "httpx>=0.27",
+    "aiosmtplib>=3.0",
+    "apscheduler>=3.10",
+    "beautifulsoup4>=4.12",
+    "openai>=1.50",
+    "openpyxl>=3.1",
+    "jinja2>=3.1",
+    "email-validator>=2.2",
+    "playwright>=1.63",
+    "segno>=1.6",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.3",
+    "pytest-asyncio>=0.24",
+    "ruff>=0.7",
+    "mypy>=1.13",
+    "pip-audit>=2.7",
+    "pip>=26.2",
+    "uv==0.12.23",
+]
+
+[project.scripts]
+driftwatch = "driftwatch.cli:run"
+driftwatch-capture-worker = "driftwatch.capture_worker:run"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/driftwatch"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM", "C4", "ASYNC", "RUF"]
+ignore = ["B008"]  # FastAPI Depends() in defaults is idiomatic.
+
+[tool.ruff.lint.isort]
+known-first-party = ["driftwatch"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+plugins = ["pydantic.mypy"]
+mypy_path = "src"
+packages = ["driftwatch"]
+
+[[tool.mypy.overrides]]
+module = ["apscheduler.*", "openpyxl.*"]
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+filterwarnings = ["error::DeprecationWarning:driftwatch.*"]

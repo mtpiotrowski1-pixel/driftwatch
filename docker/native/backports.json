@@ -1,0 +1,22 @@
+{
+  "libx11": {
+    "version": "1.8.13-r7",
+    "source": "https://www.x.org/releases/individual/lib/libX11-1.8.13.tar.xz",
+    "sha256": "69606f485c2c07c14ef64f75b7bb326d48587af33795d9ab3e607c0b5f94f11c",
+    "directory": "libX11-1.8.13",
+    "patch": "libx11-CVE-2026-88806.patch",
+    "patch_sha256": "e3803e8f544f767819cad13eb313129a0db4b47feeced0e17428244359b5eddd",
+    "patch_source": "https://gitlab.freedesktop.org/xorg/lib/libx11/-/merge_requests/309.diff",
+    "cve": "CVE-2026-88806"
+  },
+  "libxrender": {
+    "version": "0.9.12-r9",
+    "source": "https://www.x.org/releases/individual/lib/libXrender-0.9.12.tar.xz",
+    "sha256": "b832128da48b39c8d608224481743403ad1691bf4e554e4be9c174df171d1b97",
+    "directory": "libXrender-0.9.12",
+    "patch": "libxrender-CVE-2026-88807.patch",
+    "patch_sha256": "5ec7674c395a731dbeb7160bb65cb44f961d75e3eabcfff7b9568feb1d05e978",
+    "patch_source": "https://gitlab.freedesktop.org/xorg/lib/libxrender/-/merge_requests/19.diff",
+    "cve": "CVE-2026-88807"
+  }
+}

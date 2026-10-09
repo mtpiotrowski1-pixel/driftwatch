@@ -1,0 +1,28 @@
+const messages: Record<string, string> = {
+  "support.checking.title": "Checking support access",
+  "support.checking.description": "Verifying permissions for {name}.",
+  "support.error.title": "Support access could not be verified",
+  "support.error.description": "This workspace remains locked. Retry before accessing customer data.",
+  "support.readonly.title": "Support access locked",
+  "support.readonly.description": "Customer data for {name} is unavailable until temporary audited access is granted.",
+  "support.write.title": "Support access active",
+  "support.write.description": "Access to {name} is enabled for this audited session.",
+  "support.write.expires": "Expires {time}",
+  "support.grant.action": "Request support access",
+  "support.grant.confirm": "Enable temporary access",
+  "support.grant.success": "Temporary support access is active.",
+  "support.revoke.action": "Lock support access",
+  "support.revoke.success": "Support access is locked again.",
+  "support.dialog.title": "Request support access",
+  "support.dialog.description": "Temporary access to {name} is audited and restricted to this organization.",
+  "support.reason.label": "Reason for access",
+  "support.reason.hint": "Required. Enter at least 10 characters; this is stored in the audit log.",
+  "support.reason.placeholder": "Describe the customer issue or maintenance task",
+  "support.reason.invalid": "Enter a specific reason using at least 10 characters.",
+  "support.ticket.label": "Support ticket",
+  "support.ticket.hint": "Optional reference for the audit trail.",
+  "support.ticket.placeholder": "For example, SUP-1842",
+  "support.reauth": "Confirm your identity before accessing customer data.",
+};
+
+export default messages;

@@ -1,0 +1,204 @@
+{
+  "baseline_date": "2026-10-08",
+  "baseline": {
+    "api_high": 44,
+    "api_distinct_cves": 8,
+    "worker_high": 62,
+    "worker_critical": 1,
+    "worker_distinct_cves": 24
+  },
+  "findings": [
+    {
+      "cve": "CVE-2026-76642",
+      "component": "util-linux",
+      "disposition": "updated",
+      "implementation": "libuuid/libmount/libblkid 2.42.4-r0",
+      "primary": "https://github.com/util-linux/util-linux/blob/v2.42.4/Documentation/releases/v2.42.4-ReleaseNotes",
+      "tracker": "https://security-tracker.debian.org/tracker/CVE-2026-76642"
+    },
+    {
+      "cve": "CVE-2026-78408",
+      "component": "util-linux",
+      "disposition": "updated",
+      "implementation": "libuuid/libmount/libblkid 2.42.4-r0",
+      "primary": "https://github.com/util-linux/util-linux/blob/v2.42.4/Documentation/releases/v2.42.4-ReleaseNotes",
+      "tracker": "https://security-tracker.debian.org/tracker/CVE-2026-78408"
+    },
+    {
+      "cve": "CVE-2026-78409",
+      "component": "util-linux",
+      "disposition": "updated",
+      "implementation": "libuuid/libmount/libblkid 2.42.4-r0",
+      "primary": "https://github.com/util-linux/util-linux/blob/v2.42.4/Documentation/releases/v2.42.4-ReleaseNotes",
+      "tracker": "https://security-tracker.debian.org/tracker/CVE-2026-78409"
+    },
+    {
+      "cve": "CVE-2026-78410",
+      "component": "util-linux",
+      "disposition": "updated",
+      "implementation": "libuuid/libmount/libblkid 2.42.4-r0",
+      "primary": "https://github.com/util-linux/util-linux/blob/v2.42.4/Documentation/releases/v2.42.4-ReleaseNotes",
+      "tracker": "https://security-tracker.debian.org/tracker/CVE-2026-78410"
+    },
+    {
+      "cve": "CVE-2025-69720",
+      "component": "ncurses",
+      "disposition": "updated",
+      "implementation": "ncurses 6.6.20260926-r0",
+      "primary": "https://invisible-island.net/ncurses/NEWS.html#index-t20251213",
+      "tracker": "https://security-tracker.debian.org/tracker/CVE-2025-69720"
+    },
+    {
+      "cve": "CVE-2026-16742",
+      "component": "systemd",
+      "disposition": "updated",
+      "implementation": "worker libraries 261.3-r5; API has no systemd packages",
+      "primary": "https://github.com/systemd/systemd/security/advisories/GHSA-jm29-p7hh-vjhv",
+      "tracker": "https://security-tracker.debian.org/tracker/CVE-2026-16742"
+    },
+    {
+      "cve": "CVE-2026-66046",
+      "component": "expat",
+      "disposition": "updated",
+      "implementation": "libexpat1 2.9.0-r0; CPython uses this system library",
+      "primary": "https://github.com/libexpat/libexpat/blob/R_2_9_0/expat/Changes",
+      "tracker": "https://security-tracker.debian.org/tracker/CVE-2026-66046"
+    },
+    {
+      "cve": "CVE-2026-76956",
+      "component": "expat",
+      "disposition": "updated",
+      "implementation": "libexpat1 2.9.0-r0; CPython uses this system library",
+      "primary": "https://github.com/libexpat/libexpat/blob/R_2_9_0/expat/Changes",
+      "tracker": "https://security-tracker.debian.org/tracker/CVE-2026-76956"
+    },
+    {
+      "cve": "CVE-2026-76957",
+      "component": "expat",
+      "disposition": "updated",
+      "implementation": "libexpat1 2.9.0-r0; CPython uses this system library",
+      "primary": "https://github.com/libexpat/libexpat/blob/R_2_9_0/expat/Changes",
+      "tracker": "https://security-tracker.debian.org/tracker/CVE-2026-76957"
+    },
+    {
+      "cve": "CVE-2026-93990",
+      "component": "expat",
+      "disposition": "updated",
+      "implementation": "libexpat1 2.9.0-r0; CPython uses this system library",
+      "primary": "https://github.com/libexpat/libexpat/blob/R_2_9_0/expat/Changes",
+      "tracker": "https://security-tracker.debian.org/tracker/CVE-2026-93990"
+    },
+    {
+      "cve": "CVE-2026-6653",
+      "component": "libxml2",
+      "disposition": "updated",
+      "implementation": "libxml2-16 2.15.4-r0; conflicting old libxml2 explicitly excluded; API absent",
+      "primary": "https://gitlab.gnome.org/GNOME/libxml2/-/blob/v2.15.4/NEWS",
+      "tracker": "https://security-tracker.debian.org/tracker/CVE-2026-6653"
+    },
+    {
+      "cve": "CVE-2026-74860",
+      "component": "libxml2",
+      "disposition": "updated",
+      "implementation": "libxml2-16 2.15.4-r0; conflicting old libxml2 explicitly excluded; API absent",
+      "primary": "https://gitlab.gnome.org/GNOME/libxml2/-/blob/v2.15.4/NEWS",
+      "tracker": "https://security-tracker.debian.org/tracker/CVE-2026-74860"
+    },
+    {
+      "cve": "CVE-2026-86138",
+      "component": "libxml2",
+      "disposition": "updated",
+      "implementation": "libxml2-16 2.15.4-r0; conflicting old libxml2 explicitly excluded; API absent",
+      "primary": "https://gitlab.gnome.org/GNOME/libxml2/-/blob/v2.15.4/NEWS",
+      "tracker": "https://security-tracker.debian.org/tracker/CVE-2026-86138"
+    },
+    {
+      "cve": "CVE-2026-86139",
+      "component": "libxml2",
+      "disposition": "updated",
+      "implementation": "libxml2-16 2.15.4-r0; conflicting old libxml2 explicitly excluded; API absent",
+      "primary": "https://gitlab.gnome.org/GNOME/libxml2/-/blob/v2.15.4/NEWS",
+      "tracker": "https://security-tracker.debian.org/tracker/CVE-2026-86139"
+    },
+    {
+      "cve": "CVE-2026-86140",
+      "component": "libxml2",
+      "disposition": "updated",
+      "implementation": "libxml2-16 2.15.4-r0; conflicting old libxml2 explicitly excluded; API absent",
+      "primary": "https://gitlab.gnome.org/GNOME/libxml2/-/blob/v2.15.4/NEWS",
+      "tracker": "https://security-tracker.debian.org/tracker/CVE-2026-86140"
+    },
+    {
+      "cve": "CVE-2026-86142",
+      "component": "libxml2",
+      "disposition": "updated",
+      "implementation": "libxml2-16 2.15.4-r0; conflicting old libxml2 explicitly excluded; API absent",
+      "primary": "https://gitlab.gnome.org/GNOME/libxml2/-/blob/v2.15.4/NEWS",
+      "tracker": "https://security-tracker.debian.org/tracker/CVE-2026-86142"
+    },
+    {
+      "cve": "CVE-2026-86143",
+      "component": "libxml2",
+      "disposition": "updated",
+      "implementation": "libxml2-16 2.15.4-r0; conflicting old libxml2 explicitly excluded; API absent",
+      "primary": "https://gitlab.gnome.org/GNOME/libxml2/-/blob/v2.15.4/NEWS",
+      "tracker": "https://security-tracker.debian.org/tracker/CVE-2026-86143"
+    },
+    {
+      "cve": "CVE-2026-86144",
+      "component": "libxml2",
+      "disposition": "updated",
+      "implementation": "libxml2-16 2.15.4-r0; conflicting old libxml2 explicitly excluded; API absent",
+      "primary": "https://gitlab.gnome.org/GNOME/libxml2/-/blob/v2.15.4/NEWS",
+      "tracker": "https://security-tracker.debian.org/tracker/CVE-2026-86144"
+    },
+    {
+      "cve": "CVE-2026-54369",
+      "component": "acl",
+      "disposition": "removed",
+      "implementation": "No ACL packages or libacl binary",
+      "primary": "https://security-tracker.debian.org/tracker/CVE-2026-54369",
+      "tracker": "https://security-tracker.debian.org/tracker/CVE-2026-54369"
+    },
+    {
+      "cve": "CVE-2026-9538",
+      "component": "perl",
+      "disposition": "removed",
+      "implementation": "No Perl interpreter/packages",
+      "primary": "https://security-tracker.debian.org/tracker/CVE-2026-9538",
+      "tracker": "https://security-tracker.debian.org/tracker/CVE-2026-9538"
+    },
+    {
+      "cve": "CVE-2026-34980",
+      "component": "cups",
+      "disposition": "removed",
+      "implementation": "No CUPS packages or libcups binary",
+      "primary": "https://security-tracker.debian.org/tracker/CVE-2026-34980",
+      "tracker": "https://security-tracker.debian.org/tracker/CVE-2026-34980"
+    },
+    {
+      "cve": "CVE-2023-5574",
+      "component": "xorg-server",
+      "disposition": "removed",
+      "implementation": "No X server/Xvfb packages or executable; headless shell only",
+      "primary": "https://security-tracker.debian.org/tracker/CVE-2023-5574",
+      "tracker": "https://security-tracker.debian.org/tracker/CVE-2023-5574"
+    },
+    {
+      "cve": "CVE-2026-88806",
+      "component": "libx11",
+      "disposition": "upstream_backport",
+      "implementation": "1.8.13-r7 rebuilt with hash-verified upstream MR309; original version retained",
+      "primary": "https://gitlab.freedesktop.org/xorg/lib/libx11/-/merge_requests/309",
+      "tracker": "https://security-tracker.debian.org/tracker/CVE-2026-88806"
+    },
+    {
+      "cve": "CVE-2026-88807",
+      "component": "libxrender",
+      "disposition": "upstream_backport",
+      "implementation": "0.9.12-r9 rebuilt with hash-verified upstream MR19; original version retained",
+      "primary": "https://gitlab.freedesktop.org/xorg/lib/libxrender/-/merge_requests/19",
+      "tracker": "https://security-tracker.debian.org/tracker/CVE-2026-88807"
+    }
+  ]
+}

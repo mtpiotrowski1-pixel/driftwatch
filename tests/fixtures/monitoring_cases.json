@@ -1,0 +1,185 @@
+[
+  {
+    "id": "div-span-short-price",
+    "before": "<div><span>9</span></div>",
+    "after": "<div><span>8</span></div>",
+    "changed": true,
+    "expected_after": "8"
+  },
+  {
+    "id": "bare-selected-text",
+    "before": "9",
+    "after": "8",
+    "changed": true,
+    "expected_after": "8"
+  },
+  {
+    "id": "short-paragraph",
+    "before": "<p>10</p>",
+    "after": "<p>12</p>",
+    "changed": true,
+    "expected_after": "12"
+  },
+  {
+    "id": "card-price-association",
+    "before": "<div><span>Basic</span><span>10</span></div><div><span>Pro</span><span>20</span></div>",
+    "after": "<div><span>Basic</span><span>20</span></div><div><span>Pro</span><span>10</span></div>",
+    "changed": true,
+    "expected_after": "Basic 20"
+  },
+  {
+    "id": "heading-card-price-association",
+    "before": "<div><h2>Basic</h2><p>10</p></div><div><h2>Pro</h2><p>20</p></div>",
+    "after": "<div><h2>Basic</h2><p>20</p></div><div><h2>Pro</h2><p>10</p></div>",
+    "changed": true,
+    "expected_after": "Basic 20"
+  },
+  {
+    "id": "table-price-association",
+    "before": "<table><tr><td>Basic</td><td>10</td></tr><tr><td>Pro</td><td>20</td></tr></table>",
+    "after": "<table><tr><td>Basic</td><td>20</td></tr><tr><td>Pro</td><td>10</td></tr></table>",
+    "changed": true,
+    "expected_after": "Basic | 20"
+  },
+  {
+    "id": "whole-card-reorder",
+    "before": "<div><span>Basic</span><span>10</span></div><div><span>Pro</span><span>20</span></div>",
+    "after": "<div><span>Pro</span><span>20</span></div><div><span>Basic</span><span>10</span></div>",
+    "changed": false
+  },
+  {
+    "id": "whole-table-row-reorder",
+    "before": "<table><tr><td>Basic</td><td>10</td></tr><tr><td>Pro</td><td>20</td></tr></table>",
+    "after": "<table><tr><td>Pro</td><td>20</td></tr><tr><td>Basic</td><td>10</td></tr></table>",
+    "changed": false
+  },
+  {
+    "id": "ordered-procedure",
+    "before": "<ol><li>Approve</li><li>Pay</li></ol>",
+    "after": "<ol><li>Pay</li><li>Approve</li></ol>",
+    "changed": true,
+    "expected_after": "1. Pay"
+  },
+  {
+    "id": "unordered-menu",
+    "before": "<ul><li>Basic 10</li><li>Pro 20</li></ul>",
+    "after": "<ul><li>Pro 20</li><li>Basic 10</li></ul>",
+    "changed": false
+  },
+  {
+    "id": "paragraph-reorder",
+    "before": "<p>First paragraph</p><p>Second paragraph</p>",
+    "after": "<p>Second paragraph</p><p>First paragraph</p>",
+    "changed": false
+  },
+  {
+    "id": "order-number",
+    "before": "<p>Order 1709568000000</p>",
+    "after": "<p>Order 1709570000000</p>",
+    "changed": true,
+    "expected_after": "1709570000000"
+  },
+  {
+    "id": "visible-uuid",
+    "before": "<p>f0ea6a39-bc1c-4e62-8be7-b8e2a30e1421</p>",
+    "after": "<p>f0ea6a39-bc1c-4e62-8be7-b8e2a30e1422</p>",
+    "changed": true,
+    "expected_after": "f0ea6a39-bc1c-4e62-8be7-b8e2a30e1422"
+  },
+  {
+    "id": "uuid-document-link",
+    "before": "<a href='/f0ea6a39-bc1c-4e62-8be7-b8e2a30e1421.pdf'>Report</a>",
+    "after": "<a href='/f0ea6a39-bc1c-4e62-8be7-b8e2a30e1422.pdf'>Report</a>",
+    "changed": true,
+    "expected_after": "f0ea6a39-bc1c-4e62-8be7-b8e2a30e1422.pdf"
+  },
+  {
+    "id": "document-query-identity",
+    "before": "<a href='/report.pdf?t=10'>Report</a>",
+    "after": "<a href='/report.pdf?t=20'>Report</a>",
+    "changed": true,
+    "expected_after": "t=20"
+  },
+  {
+    "id": "tracking-query-noise",
+    "before": "<a href='/report.pdf?id=7&utm_source=a'>Report</a>",
+    "after": "<a href='/report.pdf?id=7&utm_source=b'>Report</a>",
+    "changed": false
+  },
+  {
+    "id": "explicit-attribute-noise",
+    "before": "<p data-timestamp='1709568000000' nonce='abc'>In stock</p>",
+    "after": "<p data-timestamp='1709570000000' nonce='def'>In stock</p>",
+    "changed": false
+  },
+  {
+    "id": "explicit-ignored-region",
+    "before": "<p>Price 10</p><div class='clock'>09:00</div>",
+    "after": "<p>Price 10</p><div class='clock'>09:01</div>",
+    "ignore_selectors": [
+      ".clock"
+    ],
+    "changed": false
+  },
+  {
+    "id": "whitespace-inline-formatting",
+    "before": "<p>The <b>widget</b> costs 10</p>",
+    "after": "<p> The <strong>widget</strong>   costs 10 </p>",
+    "changed": false
+  },
+  {
+    "id": "duplicate-record-count",
+    "before": "<p>Sold out</p>",
+    "after": "<p>Sold out</p><p>Sold out</p>",
+    "changed": true,
+    "expected_after": "Sold out"
+  },
+  {
+    "id": "definition-association",
+    "before": "<dl><dt>Basic</dt><dd>10</dd><dt>Pro</dt><dd>20</dd></dl>",
+    "after": "<dl><dt>Basic</dt><dd>20</dd><dt>Pro</dt><dd>10</dd></dl>",
+    "changed": true,
+    "expected_after": "Basic | 20"
+  },
+  {
+    "id": "linked-label-association",
+    "before": "<div>Basic <a href='/basic.pdf'>Details</a></div><div>Pro <a href='/pro.pdf'>Details</a></div>",
+    "after": "<div>Basic <a href='/pro.pdf'>Details</a></div><div>Pro <a href='/basic.pdf'>Details</a></div>",
+    "changed": true,
+    "expected_after": "Basic Details"
+  },
+  {
+    "id": "nested-card-price-association",
+    "before": "<div><div><span>Basic</span></div><div><span>10</span></div></div><div><div><span>Pro</span></div><div><span>20</span></div></div>",
+    "after": "<div><div><span>Basic</span></div><div><span>20</span></div></div><div><div><span>Pro</span></div><div><span>10</span></div></div>",
+    "changed": true,
+    "expected_after": "Basic 20"
+  },
+  {
+    "id": "table-cell-boundary",
+    "before": "<table><tr><td>a | b</td></tr></table>",
+    "after": "<table><tr><td>a</td><td>b</td></tr></table>",
+    "changed": true,
+    "expected_after": "a | b"
+  },
+  {
+    "id": "named-section-list-association",
+    "before": "<section><h2>Basic</h2><ul><li>10</li></ul></section><section><h2>Pro</h2><ul><li>20</li></ul></section>",
+    "after": "<section><h2>Basic</h2><ul><li>20</li></ul></section><section><h2>Pro</h2><ul><li>10</li></ul></section>",
+    "changed": true,
+    "expected_after": "Basic / 20"
+  },
+  {
+    "id": "table-caption-association",
+    "before": "<table><caption>Region A</caption><tr><td>Basic</td><td>10</td></tr></table><table><caption>Region B</caption><tr><td>Basic</td><td>20</td></tr></table>",
+    "after": "<table><caption>Region A</caption><tr><td>Basic</td><td>20</td></tr></table><table><caption>Region B</caption><tr><td>Basic</td><td>10</td></tr></table>",
+    "changed": true,
+    "expected_after": "Region A / Basic | 20"
+  },
+  {
+    "id": "named-section-record-reorder",
+    "before": "<section><h2>Basic</h2><ul><li>10</li></ul></section><section><h2>Pro</h2><ul><li>20</li></ul></section>",
+    "after": "<section><h2>Pro</h2><ul><li>20</li></ul></section><section><h2>Basic</h2><ul><li>10</li></ul></section>",
+    "changed": false
+  }
+]

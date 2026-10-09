@@ -1,0 +1,160 @@
+services:
+  driftwatch:
+    build:
+      context: .
+      target: runtime
+    ports:
+      - "127.0.0.1:8000:8000"
+    # Compose reads .env only for the ${...} substitutions below — a variable
+    # set in .env but not listed here never reaches the container. To pass an
+    # extra DRIFTWATCH_ setting, add it as another line in this block.
+    environment:
+      DRIFTWATCH_BASE_URL: ${DRIFTWATCH_BASE_URL:-http://localhost:8000}
+      DRIFTWATCH_SESSION_SECRET_KEY: ${DRIFTWATCH_SESSION_SECRET_KEY:?set a distinct long random session-signing key}
+      DRIFTWATCH_ENCRYPTION_KEY: ${DRIFTWATCH_ENCRYPTION_KEY:?set a distinct long random encryption key}
+      DRIFTWATCH_INITIAL_ADMIN_EMAIL: ${DRIFTWATCH_INITIAL_ADMIN_EMAIL:-}
+      DRIFTWATCH_INITIAL_ADMIN_PASSWORD: ${DRIFTWATCH_INITIAL_ADMIN_PASSWORD:-}
+      # The published port above is loopback only. Claim the instance locally
+      # before changing that boundary or putting it behind a public reverse proxy.
+      DRIFTWATCH_INITIAL_ADMIN_SIGNUP_ENABLED: ${DRIFTWATCH_INITIAL_ADMIN_SIGNUP_ENABLED:-true}
+      DRIFTWATCH_SCHEDULER_TIMEZONE: ${DRIFTWATCH_SCHEDULER_TIMEZONE:-UTC}
+      # Empty = bundled SQLite on the volume below. To mirror production, start the
+      # postgres profile and point this at it (see README/docs/DEPLOY.md):
+      #   DRIFTWATCH_DATABASE_URL=postgresql+asyncpg://driftwatch:driftwatch@postgres:5432/driftwatch \
+      #   docker compose --profile postgres up
+      DRIFTWATCH_DATABASE_URL: ${DRIFTWATCH_DATABASE_URL:-}
+      DRIFTWATCH_CAPTURE_WORKER_URL: http://capture-firewall:8090
+      DRIFTWATCH_CAPTURE_WORKER_TOKEN: ${DRIFTWATCH_CAPTURE_WORKER_TOKEN:?set a distinct long random capture worker token}
+      # Plain HTTP is acceptable only on this single-host, internal Docker
+      # network. Use HTTPS/mTLS when the services cross a host boundary.
+      DRIFTWATCH_CAPTURE_WORKER_ALLOW_INSECURE_HTTP: "true"
+      DRIFTWATCH_PICKER_ENABLED: "false"
+      # Billing is fail-closed. These defaults keep every commercial surface
+      # disabled; configure the whole provider/legal contract together.
+      DRIFTWATCH_PUBLIC_REGISTRATION_ENABLED: ${DRIFTWATCH_PUBLIC_REGISTRATION_ENABLED:-false}
+      DRIFTWATCH_BILLING_PROVIDER: ${DRIFTWATCH_BILLING_PROVIDER:-disabled}
+      DRIFTWATCH_BILLING_SELF_SERVE_ENABLED: ${DRIFTWATCH_BILLING_SELF_SERVE_ENABLED:-false}
+      DRIFTWATCH_BILLING_LEGAL_GATE_ENABLED: ${DRIFTWATCH_BILLING_LEGAL_GATE_ENABLED:-false}
+      DRIFTWATCH_BILLING_TERMS_VERSION: ${DRIFTWATCH_BILLING_TERMS_VERSION:-}
+      DRIFTWATCH_BILLING_PRIVACY_VERSION: ${DRIFTWATCH_BILLING_PRIVACY_VERSION:-}
+      DRIFTWATCH_BILLING_TERMS_URL: ${DRIFTWATCH_BILLING_TERMS_URL:-}
+      DRIFTWATCH_BILLING_PRIVACY_URL: ${DRIFTWATCH_BILLING_PRIVACY_URL:-}
+      DRIFTWATCH_BILLING_TERMS_SHA256: ${DRIFTWATCH_BILLING_TERMS_SHA256:-}
+      DRIFTWATCH_BILLING_PRIVACY_SHA256: ${DRIFTWATCH_BILLING_PRIVACY_SHA256:-}
+      DRIFTWATCH_STRIPE_SECRET_KEY: ${DRIFTWATCH_STRIPE_SECRET_KEY:-}
+      DRIFTWATCH_STRIPE_WEBHOOK_SECRET: ${DRIFTWATCH_STRIPE_WEBHOOK_SECRET:-}
+      DRIFTWATCH_STRIPE_API_VERSION: ${DRIFTWATCH_STRIPE_API_VERSION:-}
+      DRIFTWATCH_STRIPE_LIVEMODE: ${DRIFTWATCH_STRIPE_LIVEMODE:-false}
+      DRIFTWATCH_CHECK_QUEUE_CAPACITY: ${DRIFTWATCH_CHECK_QUEUE_CAPACITY:-1000}
+      DRIFTWATCH_CHECK_QUEUE_PER_ORG_CAPACITY: ${DRIFTWATCH_CHECK_QUEUE_PER_ORG_CAPACITY:-100}
+      DRIFTWATCH_CHECK_JOB_LEASE_SECONDS: ${DRIFTWATCH_CHECK_JOB_LEASE_SECONDS:-180}
+      DRIFTWATCH_CHECK_JOB_MAX_ATTEMPTS: ${DRIFTWATCH_CHECK_JOB_MAX_ATTEMPTS:-5}
+      DRIFTWATCH_CHECK_JOB_RETENTION_DAYS: ${DRIFTWATCH_CHECK_JOB_RETENTION_DAYS:-30}
+    volumes:
+      - driftwatch-data:/data
+    depends_on:
+      capture-firewall:
+        condition: service_healthy
+      capture-worker:
+        condition: service_started
+    read_only: true
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,nodev,size=64m
+    cap_drop: ["ALL"]
+    security_opt:
+      - no-new-privileges:true
+    pids_limit: 256
+    mem_limit: 1g
+    cpus: 1.0
+    networks:
+      - app-egress
+      - capture-control
+      - database
+    restart: unless-stopped
+
+  capture-firewall:
+    build:
+      context: .
+      target: capture-firewall
+    read_only: true
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,nodev,size=1m
+    cap_drop: ["ALL"]
+    cap_add: ["NET_ADMIN"]
+    security_opt:
+      - no-new-privileges:true
+    pids_limit: 32
+    mem_limit: 32m
+    cpus: 0.1
+    networks:
+      - capture-control
+      - capture-egress
+    restart: unless-stopped
+
+  capture-worker:
+    build:
+      context: .
+      target: capture-worker
+    # This is the complete environment contract. Never add database, OpenAI,
+    # SMTP, session-signing, encryption, or bootstrap-admin secrets here.
+    environment:
+      DRIFTWATCH_CAPTURE_WORKER_TOKEN: ${DRIFTWATCH_CAPTURE_WORKER_TOKEN:?set a distinct long random capture worker token}
+      DRIFTWATCH_CAPTURE_WORKER_MAX_CONCURRENT: ${DRIFTWATCH_CAPTURE_WORKER_MAX_CONCURRENT:-2}
+      DRIFTWATCH_CAPTURE_WORKER_MAX_QUEUED: ${DRIFTWATCH_CAPTURE_WORKER_MAX_QUEUED:-4}
+      DRIFTWATCH_CAPTURE_WORKER_TIMEOUT_SECONDS: ${DRIFTWATCH_CAPTURE_WORKER_TIMEOUT_SECONDS:-90}
+    network_mode: service:capture-firewall
+    depends_on:
+      capture-firewall:
+        condition: service_healthy
+    # A loopback HTTP health probe would require weakening the browser firewall.
+    # API readiness probes the authenticated control endpoint across its network.
+    healthcheck:
+      disable: true
+    read_only: true
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,nodev,size=256m
+    shm_size: 256mb
+    init: true
+    cap_drop: ["ALL"]
+    security_opt:
+      - no-new-privileges:true
+    pids_limit: 256
+    mem_limit: 1g
+    cpus: 1.0
+    restart: unless-stopped
+
+  # Optional local Postgres for production parity. Off unless --profile postgres.
+  postgres:
+    image: postgres:16@sha256:33f923b05f64ca54ac4401c01126a6b92afe839a0aa0a52bc5aeb5cc958e5f20
+    profiles: ["postgres"]
+    environment:
+      POSTGRES_USER: driftwatch
+      POSTGRES_PASSWORD: driftwatch
+      POSTGRES_DB: driftwatch
+    volumes:
+      - driftwatch-pg:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U driftwatch"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    networks:
+      - database
+    restart: unless-stopped
+
+volumes:
+  driftwatch-data:
+  driftwatch-pg:
+
+networks:
+  # Control plane is not routable outside Docker; only API and worker join it.
+  capture-control:
+    internal: true
+  # Database is likewise isolated from the browser worker.
+  database:
+    internal: true
+  app-egress:
+  # The firewall namespace enforces the egress policy on this interface.
+  capture-egress:
+    driver_opts:
+      com.docker.network.bridge.enable_icc: "false"

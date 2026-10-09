@@ -1,0 +1,440 @@
+{
+  "source": "Actual Chrome viewport captures of isolated local instances with synthetic data",
+  "captured_on": "2026-10-09",
+  "note": "Real HTML controls and locally served Manrope / Source Sans 3. Capture and delivery adapters are scripted; AI is disabled. These images do not establish a paid integration or production deployment.",
+  "image_export": "Actual browser pixels only; capture canvas outside the observed viewport trimmed, with no scaling, retouching or synthetic interface pixels. Export and CSS geometry are recorded separately per image.",
+  "files": [
+    {
+      "file": "access-desktop.jpg",
+      "sha256": "ff647bcfce101a2b9ddb30320fbf0dae993312009e18ff44b24228ae90131e77",
+      "viewport_width": 1440,
+      "viewport_height": 1000,
+      "content_width": 1440,
+      "document_width": 1440,
+      "bitmap_width": 1296,
+      "bitmap_height": 900,
+      "route": "/pricing",
+      "full_page": false,
+      "captured_build": {
+        "scripts": [
+          "/theme-init.js",
+          "/assets/index-D8Xz-c62.js"
+        ],
+        "styles": [
+          "/assets/index-4lIEmtHY.css"
+        ]
+      },
+      "fonts": {
+        "body": "\"Source Sans 3\", \"Segoe UI Variable Text\", \"Segoe UI\", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, sans-serif",
+        "heading": "Manrope, \"Segoe UI Variable Display\", \"Segoe UI\", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, sans-serif"
+      }
+    },
+    {
+      "file": "dashboard-320.jpg",
+      "sha256": "c839db40fc6af874883648e1c51463ebf6211fe32e6f63b4f3d6acf3b2d8deca",
+      "viewport_width": 320,
+      "viewport_height": 812,
+      "content_width": 310,
+      "document_width": 310,
+      "bitmap_width": 320,
+      "bitmap_height": 812,
+      "route": "/dashboard",
+      "full_page": false,
+      "scroll_y": 421.1111145019531,
+      "captured_build": {
+        "scripts": [
+          "/theme-init.js",
+          "/assets/index-DyGhUd-X.js"
+        ],
+        "styles": [
+          "/assets/index-GSoSV_Ug.css"
+        ]
+      },
+      "fonts": {
+        "body": "\"Source Sans 3\", \"Segoe UI Variable Text\", \"Segoe UI\", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, sans-serif",
+        "heading": "Manrope, \"Segoe UI Variable Display\", \"Segoe UI\", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, sans-serif"
+      },
+      "capture_update": "Opaque panel readability correction, 2026-10-09"
+    },
+    {
+      "file": "dashboard-desktop.jpg",
+      "sha256": "bdfa29fac007df6eb114d9611dbda0e09d3c7a697c70fcd19ab9c25dea6d7d99",
+      "viewport_width": 1440,
+      "viewport_height": 1000,
+      "content_width": 1430,
+      "document_width": 1430,
+      "bitmap_width": 1440,
+      "bitmap_height": 1000,
+      "route": "/dashboard",
+      "full_page": false,
+      "scroll_y": 0,
+      "captured_build": {
+        "scripts": [
+          "/theme-init.js",
+          "/assets/index-DyGhUd-X.js"
+        ],
+        "styles": [
+          "/assets/index-GSoSV_Ug.css"
+        ]
+      },
+      "fonts": {
+        "body": "\"Source Sans 3\", \"Segoe UI Variable Text\", \"Segoe UI\", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, sans-serif",
+        "heading": "Manrope, \"Segoe UI Variable Display\", \"Segoe UI\", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, sans-serif"
+      },
+      "capture_update": "Opaque panel readability correction, 2026-10-09"
+    },
+    {
+      "file": "dashboard-mobile.jpg",
+      "sha256": "98a077c7341f35c631406d6c83f273a840dc70d40ebad4a484fc0dbac8415819",
+      "viewport_width": 360,
+      "viewport_height": 812,
+      "content_width": 350,
+      "document_width": 350,
+      "bitmap_width": 360,
+      "bitmap_height": 812,
+      "route": "/dashboard",
+      "full_page": false,
+      "scroll_y": 390,
+      "captured_build": {
+        "scripts": [
+          "/theme-init.js",
+          "/assets/index-DyGhUd-X.js"
+        ],
+        "styles": [
+          "/assets/index-GSoSV_Ug.css"
+        ]
+      },
+      "fonts": {
+        "body": "\"Source Sans 3\", \"Segoe UI Variable Text\", \"Segoe UI\", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, sans-serif",
+        "heading": "Manrope, \"Segoe UI Variable Display\", \"Segoe UI\", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, sans-serif"
+      },
+      "capture_update": "Opaque panel readability correction, 2026-10-09"
+    },
+    {
+      "file": "empty-projects-desktop.jpg",
+      "sha256": "5c10094642d00219484c140e7427677464ce26d8cbc2bc306d0e47140f40a384",
+      "viewport_width": 1440,
+      "viewport_height": 1000,
+      "content_width": 1440,
+      "document_width": 1440,
+      "bitmap_width": 1296,
+      "bitmap_height": 900,
+      "route": "/projects",
+      "full_page": false,
+      "captured_build": {
+        "scripts": [
+          "/theme-init.js",
+          "/assets/index-D8Xz-c62.js"
+        ],
+        "styles": [
+          "/assets/index-4lIEmtHY.css"
+        ]
+      },
+      "fonts": {
+        "body": "\"Source Sans 3\", \"Segoe UI Variable Text\", \"Segoe UI\", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, sans-serif",
+        "heading": "Manrope, \"Segoe UI Variable Display\", \"Segoe UI\", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, sans-serif"
+      }
+    },
+    {
+      "file": "empty-projects-mobile.jpg",
+      "sha256": "67d11d2681a7576bd70c0388f31fda96bd749cbecab7898c9408c39205f345af",
+      "viewport_width": 375,
+      "viewport_height": 812,
+      "content_width": 365,
+      "document_width": 365,
+      "bitmap_width": 338,
+      "bitmap_height": 731,
+      "route": "/projects",
+      "full_page": false,
+      "captured_build": {
+        "scripts": [
+          "/theme-init.js",
+          "/assets/index-D8Xz-c62.js"
+        ],
+        "styles": [
+          "/assets/index-4lIEmtHY.css"
+        ]
+      },
+      "fonts": {
+        "body": "\"Source Sans 3\", \"Segoe UI Variable Text\", \"Segoe UI\", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, sans-serif",
+        "heading": "Manrope, \"Segoe UI Variable Display\", \"Segoe UI\", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, sans-serif"
+      }
+    },
+    {
+      "file": "empty-recipients-desktop.jpg",
+      "sha256": "41b7d7a1c3ebd737ecf3d914fe1baf1a6425d66e26bcfef8b992ffa480ade65e",
+      "viewport_width": 1440,
+      "viewport_height": 1000,
+      "content_width": 1440,
+      "document_width": 1440,
+      "bitmap_width": 1296,
+      "bitmap_height": 900,
+      "route": "/recipients",
+      "full_page": false,
+      "captured_build": {
+        "scripts": [
+          "/theme-init.js",
+          "/assets/index-D8Xz-c62.js"
+        ],
+        "styles": [
+          "/assets/index-4lIEmtHY.css"
+        ]
+      },
+      "fonts": {
+        "body": "\"Source Sans 3\", \"Segoe UI Variable Text\", \"Segoe UI\", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, sans-serif",
+        "heading": "Manrope, \"Segoe UI Variable Display\", \"Segoe UI\", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, sans-serif"
+      }
+    },
+    {
+      "file": "empty-recipients-mobile.jpg",
+      "sha256": "e4ebaf78d3ae54912e9320040c5af72dcc2de5ada2bdde880cfeccf0fa31d5f8",
+      "viewport_width": 375,
+      "viewport_height": 812,
+      "content_width": 365,
+      "document_width": 365,
+      "bitmap_width": 338,
+      "bitmap_height": 731,
+      "route": "/recipients",
+      "full_page": false,
+      "captured_build": {
+        "scripts": [
+          "/theme-init.js",
+          "/assets/index-D8Xz-c62.js"
+        ],
+        "styles": [
+          "/assets/index-4lIEmtHY.css"
+        ]
+      },
+      "fonts": {
+        "body": "\"Source Sans 3\", \"Segoe UI Variable Text\", \"Segoe UI\", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, sans-serif",
+        "heading": "Manrope, \"Segoe UI Variable Display\", \"Segoe UI\", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, sans-serif"
+      }
+    },
+    {
+      "file": "forgot-password-desktop.jpg",
+      "sha256": "3bb50a9a5e1c6732fdc9b5e7827b87e5457b1bca320147749ae0d09d9aa71810",
+      "viewport_width": 1440,
+      "viewport_height": 1000,
+      "content_width": 1440,
+      "document_width": 1440,
+      "bitmap_width": 1296,
+      "bitmap_height": 900,
+      "route": "/forgot-password",
+      "full_page": false,
+      "captured_build": {
+        "scripts": [
+          "/theme-init.js",
+          "/assets/index-D8Xz-c62.js"
+        ],
+        "styles": [
+          "/assets/index-4lIEmtHY.css"
+        ]
+      },
+      "fonts": {
+        "body": "\"Source Sans 3\", \"Segoe UI Variable Text\", \"Segoe UI\", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, sans-serif",
+        "heading": "Manrope, \"Segoe UI Variable Display\", \"Segoe UI\", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, sans-serif"
+      }
+    },
+    {
+      "file": "history-desktop.jpg",
+      "sha256": "7ae4055b97fee0a8371aa7f8bc323f9d1d6a271c4a9de20f1a7dfdf221527795",
+      "viewport_width": 1440,
+      "viewport_height": 1000,
+      "content_width": 1430,
+      "document_width": 1430,
+      "bitmap_width": 1296,
+      "bitmap_height": 900,
+      "route": "/sites/1?change=1",
+      "full_page": false,
+      "captured_build": {
+        "scripts": [
+          "/theme-init.js",
+          "/assets/index-D8Xz-c62.js"
+        ],
+        "styles": [
+          "/assets/index-4lIEmtHY.css"
+        ]
+      },
+      "fonts": {
+        "body": "\"Source Sans 3\", \"Segoe UI Variable Text\", \"Segoe UI\", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, sans-serif",
+        "heading": "Manrope, \"Segoe UI Variable Display\", \"Segoe UI\", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, sans-serif"
+      }
+    },
+    {
+      "file": "history-mobile.jpg",
+      "sha256": "4f2aeaa41df76b7dbefd83e8833585b80405251ce119de112b5fda439b6da3e5",
+      "viewport_width": 375,
+      "viewport_height": 812,
+      "content_width": 365,
+      "document_width": 365,
+      "bitmap_width": 338,
+      "bitmap_height": 731,
+      "route": "/sites/1?change=1",
+      "full_page": false,
+      "captured_build": {
+        "scripts": [
+          "/theme-init.js",
+          "/assets/index-D8Xz-c62.js"
+        ],
+        "styles": [
+          "/assets/index-4lIEmtHY.css"
+        ]
+      },
+      "fonts": {
+        "body": "\"Source Sans 3\", \"Segoe UI Variable Text\", \"Segoe UI\", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, sans-serif",
+        "heading": "Manrope, \"Segoe UI Variable Display\", \"Segoe UI\", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, sans-serif"
+      }
+    },
+    {
+      "file": "initial-setup-desktop.jpg",
+      "sha256": "c97c3809a373fa2f1d3a0023704fa6734d8b844319adf00c671bd0c64acfc06f",
+      "viewport_width": 1440,
+      "viewport_height": 1000,
+      "content_width": 1440,
+      "document_width": 1440,
+      "bitmap_width": 1296,
+      "bitmap_height": 900,
+      "route": "/login",
+      "full_page": false,
+      "captured_build": {
+        "scripts": [
+          "/theme-init.js",
+          "/assets/index-D8Xz-c62.js"
+        ],
+        "styles": [
+          "/assets/index-4lIEmtHY.css"
+        ]
+      },
+      "fonts": {
+        "body": "\"Source Sans 3\", \"Segoe UI Variable Text\", \"Segoe UI\", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, sans-serif",
+        "heading": "Manrope, \"Segoe UI Variable Display\", \"Segoe UI\", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, sans-serif"
+      }
+    },
+    {
+      "file": "initial-setup-mobile.jpg",
+      "sha256": "e578048f3e8f1b66008ef2a056a6d8fcc2cc1789f8bf68b53eb4d3f11bd45390",
+      "viewport_width": 320,
+      "viewport_height": 812,
+      "content_width": 310,
+      "document_width": 310,
+      "bitmap_width": 288,
+      "bitmap_height": 731,
+      "route": "/login",
+      "full_page": false,
+      "captured_build": {
+        "scripts": [
+          "/theme-init.js",
+          "/assets/index-D8Xz-c62.js"
+        ],
+        "styles": [
+          "/assets/index-4lIEmtHY.css"
+        ]
+      },
+      "fonts": {
+        "body": "\"Source Sans 3\", \"Segoe UI Variable Text\", \"Segoe UI\", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, sans-serif",
+        "heading": "Manrope, \"Segoe UI Variable Display\", \"Segoe UI\", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, sans-serif"
+      }
+    },
+    {
+      "file": "landing-desktop.jpg",
+      "sha256": "e91345c28a17ec925a495988c1c2fb89b2a8223a341032d9927a901623ce9190",
+      "viewport_width": 1440,
+      "viewport_height": 1000,
+      "content_width": 1430,
+      "document_width": 1430,
+      "bitmap_width": 1296,
+      "bitmap_height": 900,
+      "route": "/",
+      "full_page": false,
+      "captured_build": {
+        "scripts": [
+          "/theme-init.js",
+          "/assets/index-D8Xz-c62.js"
+        ],
+        "styles": [
+          "/assets/index-4lIEmtHY.css"
+        ]
+      },
+      "fonts": {
+        "body": "\"Source Sans 3\", \"Segoe UI Variable Text\", \"Segoe UI\", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, sans-serif",
+        "heading": "Manrope, \"Segoe UI Variable Display\", \"Segoe UI\", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, sans-serif"
+      }
+    },
+    {
+      "file": "landing-mobile.jpg",
+      "sha256": "6bcac4954c6dad6f5c99926e841c972fe1b802ff1cfd1d99eaf2759d615152fc",
+      "viewport_width": 375,
+      "viewport_height": 812,
+      "content_width": 365,
+      "document_width": 365,
+      "bitmap_width": 338,
+      "bitmap_height": 731,
+      "route": "/",
+      "full_page": false,
+      "captured_build": {
+        "scripts": [
+          "/theme-init.js",
+          "/assets/index-D8Xz-c62.js"
+        ],
+        "styles": [
+          "/assets/index-4lIEmtHY.css"
+        ]
+      },
+      "fonts": {
+        "body": "\"Source Sans 3\", \"Segoe UI Variable Text\", \"Segoe UI\", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, sans-serif",
+        "heading": "Manrope, \"Segoe UI Variable Display\", \"Segoe UI\", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, sans-serif"
+      }
+    },
+    {
+      "file": "login-desktop.jpg",
+      "sha256": "ee6c4d6dc6e9792e1e808b741cfad4bfbc048a50ad3d2afe04688e037485fb13",
+      "viewport_width": 1440,
+      "viewport_height": 1000,
+      "content_width": 1440,
+      "document_width": 1440,
+      "bitmap_width": 1296,
+      "bitmap_height": 900,
+      "route": "/login",
+      "full_page": false,
+      "captured_build": {
+        "scripts": [
+          "/theme-init.js",
+          "/assets/index-D8Xz-c62.js"
+        ],
+        "styles": [
+          "/assets/index-4lIEmtHY.css"
+        ]
+      },
+      "fonts": {
+        "body": "\"Source Sans 3\", \"Segoe UI Variable Text\", \"Segoe UI\", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, sans-serif",
+        "heading": "Manrope, \"Segoe UI Variable Display\", \"Segoe UI\", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, sans-serif"
+      }
+    },
+    {
+      "file": "login-mobile.jpg",
+      "sha256": "9ecf4f5e2668655b1bf9297b7cb1826ed0fcb59be435840991b07f9bbb816c3a",
+      "viewport_width": 375,
+      "viewport_height": 812,
+      "content_width": 375,
+      "document_width": 375,
+      "bitmap_width": 338,
+      "bitmap_height": 731,
+      "route": "/login",
+      "full_page": false,
+      "captured_build": {
+        "scripts": [
+          "/theme-init.js",
+          "/assets/index-D8Xz-c62.js"
+        ],
+        "styles": [
+          "/assets/index-4lIEmtHY.css"
+        ]
+      },
+      "fonts": {
+        "body": "\"Source Sans 3\", \"Segoe UI Variable Text\", \"Segoe UI\", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, sans-serif",
+        "heading": "Manrope, \"Segoe UI Variable Display\", \"Segoe UI\", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, sans-serif"
+      }
+    }
+  ],
+  "refresh_note": "The three dashboard views were refreshed after the opaque-panel correction. The remaining fourteen unchanged views retain their own earlier captured build identifiers."
+}

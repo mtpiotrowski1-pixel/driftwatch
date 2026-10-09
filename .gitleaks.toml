@@ -1,0 +1,120 @@
+title = "Driftwatch secret scanning"
+
+[extend]
+useDefault = true
+
+# Values are fixed synthetic test material, constrained to the two original
+# fixture files. This does not exempt arbitrary tests, providers or config files.
+[[allowlists]]
+targetRules = ["generic-api-key"]
+description = "Synthetic test session key and RFC6238 public test vector"
+condition = "AND"
+paths = ['''^tests/(conftest|test_two_factor)\.py$''']
+regexTarget = "secret"
+regexes = [
+  '''^test-secret-key-0123456789-abcdef$''',
+  '''^GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ$''',
+]
+
+# Reviewed exact fixtures. These values are used only in isolated tests or CI.
+# Both the path AND full value must match; new credentials in these files still fail.
+# Target the rule: the dir walker skips global allowlist paths before evaluating
+# their content predicates, even with AND. Rule allowlists retain both checks.
+
+[[allowlists]]
+targetRules = ["generic-api-key"]
+description = "Exact synthetic fixture values"
+condition = "AND"
+paths = ['''^\.github/workflows/ci\.yml$''']
+regexTarget = "secret"
+regexes = [
+  '''^ci\-encryption\-key\-0123456789\-abcdef$''',
+]
+
+[[allowlists]]
+targetRules = ["generic-api-key", "stripe-access-token"]
+description = "Exact synthetic fixture values"
+condition = "AND"
+paths = ['''^tests/test_billing_api\.py$''']
+regexTarget = "secret"
+regexes = [
+  '''^sk_test_1234567890$''',
+  '''^test\-secret\-key\-0123456789\-abcdef$''',
+  '''^whsec_1234567890$''',
+]
+
+[[allowlists]]
+targetRules = ["generic-api-key", "stripe-access-token"]
+description = "Exact synthetic fixture values"
+condition = "AND"
+paths = ['''^tests/test_billing_provider\.py$''']
+regexTarget = "secret"
+regexes = [
+  '''^sk_test_1234567890$''',
+  '''^whsec_1234567890$''',
+]
+
+[[allowlists]]
+targetRules = ["generic-api-key"]
+description = "Exact synthetic fixture values"
+condition = "AND"
+paths = ['''^tests/test_capture_worker_wiring\.py$''']
+regexTarget = "secret"
+regexes = [
+  '''^application\-secret\-key\-0123456789\-abcdef$''',
+  '''^encryption\-secret\-key\-0123456789\-abcdef$''',
+]
+
+[[allowlists]]
+targetRules = ["generic-api-key"]
+description = "Exact synthetic fixture values"
+condition = "AND"
+paths = ['''^tests/test_check_queue\.py$''']
+regexTarget = "secret"
+regexes = [
+  '''^invalid\-digest\-001$''',
+]
+
+[[allowlists]]
+targetRules = ["generic-api-key", "stripe-access-token"]
+description = "Exact synthetic fixture values"
+condition = "AND"
+paths = ['''^tests/test_config\.py$''']
+regexTarget = "secret"
+regexes = [
+  '''^rk_test_1234567890$''',
+  '''^secret_1234567890$''',
+  '''^sk_live_1234567890$''',
+  '''^sk_test_1234567890$''',
+  '''^whsec_1234567890$''',
+]
+
+[[allowlists]]
+targetRules = ["generic-api-key"]
+description = "Exact synthetic fixture values"
+condition = "AND"
+paths = ['''^tests/test_signup\.py$''']
+regexTarget = "secret"
+regexes = [
+  '''^closed\-encryption\-key\-0123456789\-abcdef$''',
+]
+
+[[allowlists]]
+targetRules = ["generic-api-key"]
+description = "Exact synthetic fixture values"
+condition = "AND"
+paths = ['''^web/src/components/InteractionStepsEditor\.test\.ts$''']
+regexTarget = "secret"
+regexes = [
+  '''^5a530db0\-181d\-438b\-98df\-df6ab4f66c78$''',
+]
+
+[[allowlists]]
+targetRules = ["generic-api-key"]
+description = "Exact synthetic fixture values"
+condition = "AND"
+paths = ['''^web/src/components/operations/data\.test\.tsx$''']
+regexTarget = "secret"
+regexes = [
+  '''^6aa3beb8\-1e2b\-48f8\-a567\-ec91c815cf7b$''',
+]

@@ -1,0 +1,238 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  secrets:
+    name: Redacted secrets - all refs and outgoing files
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+        with:
+          python-version: "3.12.15"
+      - run: python scripts/secret_scan.py --history --files
+
+  backend:
+    name: Backend - Python 3.12 on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+        with:
+          # Current PSF 3.12 releases have no Windows installers. uv supplies
+          # the tested security release rather than leaving Windows on 3.12.10.
+          python-version: ${{ runner.os == 'Windows' && '3.14.8' || '3.12.15' }}
+      - name: Install
+        # Runtime and build dependencies are independently hash-locked. Disabling
+        # PEP 517 isolation prevents pip from fetching an undeclared backend tree.
+        run: |
+          python -m pip install --require-hashes --only-binary=:all: -r requirements-installer.lock
+          python -m pip install --require-hashes --only-binary=:all: -r requirements-tools.lock
+          uv venv --managed-python --python 3.12.15 .venv
+          if [ "$RUNNER_OS" = "Windows" ]; then
+            release_python=.venv/Scripts/python.exe
+            cygpath -w "$PWD/.venv/Scripts" >> "$GITHUB_PATH"
+          else
+            release_python=.venv/bin/python
+            printf '%s\n' "$PWD/.venv/bin" >> "$GITHUB_PATH"
+          fi
+          uv pip install --python "$release_python" --require-hashes --only-binary=:all: -r requirements-installer.lock
+          "$release_python" -m pip install --require-hashes -r requirements-dev.lock
+          "$release_python" -m pip install --require-hashes --only-binary=:all: -r requirements-build.lock
+          "$release_python" -m pip install --no-deps --no-build-isolation -e .
+      - name: Lockfiles are current
+        if: runner.os == 'Linux'
+        # Recompiling against the committed locks keeps existing pins unless
+        # pyproject.toml forces a change, so a diff means someone edited the
+        # dependency floors without regenerating the locks.
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import tomllib
+
+          declared = tomllib.loads(Path("pyproject.toml").read_text(encoding="utf-8"))[
+              "build-system"
+          ]["requires"]
+          build_input = [
+              line.strip()
+              for line in Path("requirements-build.in").read_text(encoding="utf-8").splitlines()
+              if line.strip() and not line.lstrip().startswith("#")
+          ]
+          if declared != build_input:
+              raise SystemExit(
+                  "pyproject.toml [build-system].requires and requirements-build.in differ"
+              )
+          PY
+          uv pip compile requirements-installer.in -o requirements-installer.lock --universal --python-version 3.12 --generate-hashes --only-binary=:all: --emit-build-options
+          uv pip compile requirements-tools.in -o requirements-tools.lock --universal --python-version 3.12 --generate-hashes --only-binary=:all: --emit-build-options
+          uv pip compile requirements-build.in -o requirements-build.lock --universal --python-version 3.12 --generate-hashes --only-binary=:all: --emit-build-options
+          uv pip compile pyproject.toml --universal --python-version 3.12 --generate-hashes -o requirements.lock
+          uv pip compile pyproject.toml --extra dev --universal --python-version 3.12 --generate-hashes -o requirements-dev.lock
+          git diff --exit-code requirements-installer.lock requirements-tools.lock requirements-build.lock requirements.lock requirements-dev.lock
+      - name: Format
+        run: ruff format --check .
+      - name: Lint
+        run: ruff check .
+      - name: Types
+        run: mypy src
+      - name: Test
+        run: |
+          if [ "$RUNNER_OS" = "Linux" ]; then
+            playwright install --with-deps chromium
+          else
+            playwright install chromium
+          fi
+          pytest -q
+      - name: Audit dependencies
+        run: pip-audit
+
+  frontend:
+    name: Frontend - eslint, test, build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
+        with:
+          node-version: "22.23.1"
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - run: npm ci
+      - name: Audit dependencies
+        run: npm audit --audit-level=high
+      - run: npm run lint
+      - run: npm run test
+      - run: npm run build
+
+  postgres:
+    name: Postgres - migrations and quota concurrency
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16@sha256:33f923b05f64ca54ac4401c01126a6b92afe839a0aa0a52bc5aeb5cc958e5f20
+        env:
+          POSTGRES_USER: driftwatch
+          POSTGRES_PASSWORD: driftwatch
+          POSTGRES_DB: driftwatch
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U driftwatch"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+    env:
+      DRIFTWATCH_TEST_POSTGRES_URL: postgresql+asyncpg://driftwatch:driftwatch@127.0.0.1:5432/driftwatch
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+        with:
+          python-version: "3.12.15"
+      - name: Install
+        run: |
+          python -m pip install --require-hashes --only-binary=:all: -r requirements-installer.lock
+          pip install --require-hashes -r requirements-dev.lock
+          pip install --require-hashes --only-binary=:all: -r requirements-build.lock
+          pip install --no-deps --no-build-isolation -e .
+      - run: pytest tests/test_postgres_integration.py -q
+
+  image:
+    name: Production image smoke test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - name: Scan infrastructure configuration
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          version: v0.75.0
+          scan-type: fs
+          scan-ref: .
+          scanners: misconfig
+          format: table
+          exit-code: "1"
+          severity: CRITICAL,HIGH
+      - name: Build API and isolated worker targets
+        run: |
+          docker build --target runtime --tag driftwatch:release .
+          docker build --target capture-worker --tag driftwatch-capture:release .
+          docker build --target capture-firewall --tag driftwatch-firewall:release .
+          for image in driftwatch:release driftwatch-capture:release; do
+            docker run --rm --entrypoint python "$image" -c "import importlib.util; import driftwatch; assert all(importlib.util.find_spec(name) is None for name in ('hatchling', 'pip', 'ensurepip', 'lxml'))"
+          done
+          docker run --rm --entrypoint python driftwatch:release /native/verify_runtime.py api
+          docker run --rm --entrypoint python driftwatch-capture:release /native/verify_runtime.py worker
+          docker run --rm --entrypoint python driftwatch-capture:release /opt/driftwatch-native/verify_backports.py
+      - name: Report advisories including vendor-unfixed HIGH and CRITICAL
+        # Preserve the complete report before the unfixed-inclusive gates below.
+        # Vendor database coverage is also checked against known native fixes.
+        run: |
+          for image in driftwatch:release driftwatch-capture:release driftwatch-firewall:release; do
+            trivy image --scanners vuln --ignore-unfixed=false --severity HIGH,CRITICAL --exit-code 0 --format table "$image"
+          done
+      - name: Generate API image SBOM
+        uses: anchore/sbom-action@e22c389904149dbc22b58101806040fa8d37a610 # v0.24.0
+        with:
+          image: driftwatch:release
+          artifact-name: driftwatch-api.spdx.json
+          upload-artifact-retention: 14
+          upload-release-assets: false
+      - name: Generate capture worker image SBOM
+        uses: anchore/sbom-action@e22c389904149dbc22b58101806040fa8d37a610 # v0.24.0
+        with:
+          image: driftwatch-capture:release
+          artifact-name: driftwatch-capture-worker.spdx.json
+          upload-artifact-retention: 14
+          upload-release-assets: false
+      - name: Scan API image vulnerabilities
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          image-ref: driftwatch:release
+          format: table
+          exit-code: "1"
+          ignore-unfixed: false
+          vuln-type: os,library
+          severity: CRITICAL,HIGH
+          skip-setup-trivy: true
+      - name: Scan firewall image vulnerabilities
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          image-ref: driftwatch-firewall:release
+          format: table
+          exit-code: "1"
+          ignore-unfixed: false
+          vuln-type: os,library
+          severity: CRITICAL,HIGH
+          skip-setup-trivy: true
+      - name: Scan capture worker image vulnerabilities
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          image-ref: driftwatch-capture:release
+          format: table
+          exit-code: "1"
+          ignore-unfixed: false
+          vuln-type: os,library
+          severity: CRITICAL,HIGH
+          skip-setup-trivy: true
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+        with:
+          python-version: "3.12.15"
+      - name: Socket boundary and API to worker to owned HTTP fixture
+        run: python scripts/docker_smoke.py --no-build

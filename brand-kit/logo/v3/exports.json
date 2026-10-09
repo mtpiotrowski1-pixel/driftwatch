@@ -1,0 +1,196 @@
+{
+  "source": "logo/v3/driftwatch-emblem-source.png",
+  "source_sha256": "a00bee4f8d1cb8ad9463270e10ed4f6d1d304b919f5ac2c75735b14927189725",
+  "dimensions": [
+    1254,
+    1254
+  ],
+  "alpha": true,
+  "trimmed_transparent_bounds": [
+    138,
+    80,
+    1140,
+    1154
+  ],
+  "visible_alpha_threshold": 1,
+  "visible_bounds": [
+    146,
+    88,
+    1132,
+    1146
+  ],
+  "export": "Lanczos resize, 6.25% clear space, original colours and alpha",
+  "outputs": [
+    {
+      "path": "brand-kit/logo/driftwatch-mark-16.png",
+      "size": [
+        16,
+        16
+      ],
+      "bytes": 852,
+      "sha256": "8da34d6f80d07d734c347407fc8d132ce629e5aa0836e52a84749294c724fba3"
+    },
+    {
+      "path": "brand-kit/logo/driftwatch-mark-24.png",
+      "size": [
+        24,
+        24
+      ],
+      "bytes": 1475,
+      "sha256": "e8a04e83462ac057e532e90155d38bd7ea63b999c41552105903f5c48ebe9fed"
+    },
+    {
+      "path": "brand-kit/logo/driftwatch-mark-32.png",
+      "size": [
+        32,
+        32
+      ],
+      "bytes": 2405,
+      "sha256": "67eddfb3cc05cf6c2099987cb6659ae90696fbdc0daf3489fc668638b1d4b28c"
+    },
+    {
+      "path": "web/public/brand/driftwatch-mark-32.png",
+      "size": [
+        32,
+        32
+      ],
+      "bytes": 2405,
+      "sha256": "67eddfb3cc05cf6c2099987cb6659ae90696fbdc0daf3489fc668638b1d4b28c"
+    },
+    {
+      "path": "brand-kit/logo/driftwatch-mark-64.png",
+      "size": [
+        64,
+        64
+      ],
+      "bytes": 6951,
+      "sha256": "55482ba51f65be41e156bd2780545099aeceb9a4de66124f2759a36cce60cac7"
+    },
+    {
+      "path": "web/public/brand/driftwatch-emblem-64.png",
+      "size": [
+        64,
+        64
+      ],
+      "bytes": 6951,
+      "sha256": "55482ba51f65be41e156bd2780545099aeceb9a4de66124f2759a36cce60cac7"
+    },
+    {
+      "path": "web/public/brand/driftwatch-emblem-64.webp",
+      "size": [
+        64,
+        64
+      ],
+      "bytes": 5720,
+      "sha256": "f2a2ec475d9f72747f450b02c312c1e061d03498deb21fb940a7fd01758a893a"
+    },
+    {
+      "path": "brand-kit/logo/driftwatch-mark-128.png",
+      "size": [
+        128,
+        128
+      ],
+      "bytes": 20680,
+      "sha256": "42b3f7a652a33f9dc27c7463060639fbf806544149e3d9866f30b62fd9cea040"
+    },
+    {
+      "path": "web/public/brand/driftwatch-emblem-128.png",
+      "size": [
+        128,
+        128
+      ],
+      "bytes": 20680,
+      "sha256": "42b3f7a652a33f9dc27c7463060639fbf806544149e3d9866f30b62fd9cea040"
+    },
+    {
+      "path": "web/public/brand/driftwatch-emblem-128.webp",
+      "size": [
+        128,
+        128
+      ],
+      "bytes": 15948,
+      "sha256": "b4821e97ee0480687dbb8aa66ebe5683d53b6574793d4b08ce30e99c0aa794c8"
+    },
+    {
+      "path": "brand-kit/logo/driftwatch-mark-180.png",
+      "size": [
+        180,
+        180
+      ],
+      "bytes": 36490,
+      "sha256": "7a7ffc2a9278b4b8be4e5bc8ed5edb50d537324419913cf5b00bdb4443eae162"
+    },
+    {
+      "path": "web/public/brand/driftwatch-mark-180.png",
+      "size": [
+        180,
+        180
+      ],
+      "bytes": 36490,
+      "sha256": "7a7ffc2a9278b4b8be4e5bc8ed5edb50d537324419913cf5b00bdb4443eae162"
+    },
+    {
+      "path": "brand-kit/logo/driftwatch-mark-192.png",
+      "size": [
+        192,
+        192
+      ],
+      "bytes": 40528,
+      "sha256": "9673d51c750cfa7e1cc12b9e3ccfe1ee0a7b1d7b740794d3ca5a337a91977b7f"
+    },
+    {
+      "path": "web/public/brand/driftwatch-mark-192.png",
+      "size": [
+        192,
+        192
+      ],
+      "bytes": 40528,
+      "sha256": "9673d51c750cfa7e1cc12b9e3ccfe1ee0a7b1d7b740794d3ca5a337a91977b7f"
+    },
+    {
+      "path": "brand-kit/logo/driftwatch-mark-256.png",
+      "size": [
+        256,
+        256
+      ],
+      "bytes": 65181,
+      "sha256": "523bf9fc09eed9724977a2e36ed277124b2b67e8e37342a2994c073f4e7afbd2"
+    },
+    {
+      "path": "web/public/brand/driftwatch-emblem-256.png",
+      "size": [
+        256,
+        256
+      ],
+      "bytes": 65181,
+      "sha256": "523bf9fc09eed9724977a2e36ed277124b2b67e8e37342a2994c073f4e7afbd2"
+    },
+    {
+      "path": "web/public/brand/driftwatch-emblem-256.webp",
+      "size": [
+        256,
+        256
+      ],
+      "bytes": 47202,
+      "sha256": "0f2c21bb3f221a4eb6c80f7258f74a64fabe7c6b78b1bf6ed61d4645ba87fe14"
+    },
+    {
+      "path": "brand-kit/logo/driftwatch-mark-512.png",
+      "size": [
+        512,
+        512
+      ],
+      "bytes": 220203,
+      "sha256": "f8bb3b5348e3ef6e7c4e96334bd103ea8a138235e88c81ae35999793b518a1ab"
+    },
+    {
+      "path": "web/public/brand/driftwatch-mark-512.png",
+      "size": [
+        512,
+        512
+      ],
+      "bytes": 220203,
+      "sha256": "f8bb3b5348e3ef6e7c4e96334bd103ea8a138235e88c81ae35999793b518a1ab"
+    }
+  ]
+}

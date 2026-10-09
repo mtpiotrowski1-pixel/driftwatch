@@ -1,0 +1,28 @@
+const messages: Record<string, string> = {
+  "support.checking.title": "Sprawdzanie dostępu serwisowego",
+  "support.checking.description": "Weryfikowanie uprawnień dla organizacji {name}.",
+  "support.error.title": "Nie udało się zweryfikować dostępu serwisowego",
+  "support.error.description": "Obszar pozostaje zablokowany. Ponów próbę przed dostępem do danych klienta.",
+  "support.readonly.title": "Dostęp serwisowy zablokowany",
+  "support.readonly.description": "Dane organizacji {name} są niedostępne do czasu przyznania tymczasowego, audytowanego dostępu.",
+  "support.write.title": "Dostęp serwisowy aktywny",
+  "support.write.description": "Dostęp do organizacji {name} jest aktywny w tej audytowanej sesji.",
+  "support.write.expires": "Wygasa {time}",
+  "support.grant.action": "Poproś o dostęp serwisowy",
+  "support.grant.confirm": "Włącz tymczasowy dostęp",
+  "support.grant.success": "Tymczasowy dostęp serwisowy jest aktywny.",
+  "support.revoke.action": "Zablokuj dostęp serwisowy",
+  "support.revoke.success": "Dostęp serwisowy jest ponownie zablokowany.",
+  "support.dialog.title": "Poproś o dostęp serwisowy",
+  "support.dialog.description": "Tymczasowy dostęp do organizacji {name} jest audytowany i ograniczony do tej organizacji.",
+  "support.reason.label": "Powód dostępu",
+  "support.reason.hint": "Pole wymagane. Wpisz co najmniej 10 znaków; treść trafi do dziennika audytu.",
+  "support.reason.placeholder": "Opisz zgłoszenie klienta lub zadanie serwisowe",
+  "support.reason.invalid": "Podaj konkretny powód zawierający co najmniej 10 znaków.",
+  "support.ticket.label": "Numer zgłoszenia",
+  "support.ticket.hint": "Opcjonalne odwołanie w dzienniku audytu.",
+  "support.ticket.placeholder": "Na przykład SUP-1842",
+  "support.reauth": "Potwierdź swoją tożsamość przed dostępem do danych klienta.",
+};
+
+export default messages;

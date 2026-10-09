@@ -1,0 +1,4 @@
+* text=auto eol=lf
+*.png binary
+*.svg text eol=lf
+*.apk.lock text eol=lf
