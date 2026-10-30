@@ -1,7 +1,7 @@
 ARG DRIFTWATCH_IMAGE_TARGET=runtime
 
 # --- Stage 0: exact source archive for inspection ---------------------------
-FROM alpine:3.24@sha256:294b683cb724975bec92580e1e685676bd4b50bda910ddb8c51d4cabeaec77e6 AS source
+FROM alpine:3.24@sha256:be2656061b536c1883c4034790e21d0a09c5aaaf51968b89368a3c0371ea2c9a AS source
 WORKDIR /source/driftwatch
 COPY . .
 RUN tar -czf /driftwatch-source.tar.gz -C /source driftwatch
@@ -67,7 +67,7 @@ RUN pip install --no-deps /wheels/driftwatch-*.whl \
     && rm -rf /wheels
 
 # The sole privileged component owns packet filtering, not application data.
-FROM alpine:3.24@sha256:294b683cb724975bec92580e1e685676bd4b50bda910ddb8c51d4cabeaec77e6 AS capture-firewall
+FROM alpine:3.24@sha256:be2656061b536c1883c4034790e21d0a09c5aaaf51968b89368a3c0371ea2c9a AS capture-firewall
 RUN apk add --no-cache iptables zlib=1.3.2-r1
 COPY scripts/capture_firewall.sh /usr/local/bin/capture-firewall
 RUN chmod 0555 /usr/local/bin/capture-firewall
