@@ -36,6 +36,7 @@ dependencies = [
     "aiosmtplib>=3.0",
     "apscheduler>=3.10",
     "beautifulsoup4>=4.12",
+    "soupsieve>=2.5",  # Imported directly to validate ignore selectors.
     "openai>=1.50",
     "openpyxl>=3.1",
     "jinja2>=3.1",
@@ -52,7 +53,7 @@ dev = [
     "mypy>=1.13",
     "pip-audit>=2.7",
     "pip>=26.2",
-    "uv==0.12.23",
+    "uv==0.13.4",
 ]
 
 [project.scripts]

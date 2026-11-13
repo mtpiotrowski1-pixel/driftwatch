@@ -1,2 +1,2 @@
 # uv supplies current security releases on Windows, where PSF 3.12 is source-only.
-uv==0.12.23
+uv==0.13.4
