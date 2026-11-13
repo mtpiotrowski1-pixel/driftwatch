@@ -179,10 +179,8 @@ jobs:
           done
           docker run --rm --entrypoint python driftwatch:release /native/verify_runtime.py api
           docker run --rm --entrypoint python driftwatch-capture:release /native/verify_runtime.py worker
-          docker run --rm --entrypoint python driftwatch-capture:release /opt/driftwatch-native/verify_backports.py
       - name: Report advisories including vendor-unfixed HIGH and CRITICAL
         # Preserve the complete report before the unfixed-inclusive gates below.
-        # Vendor database coverage is also checked against known native fixes.
         run: |
           for image in driftwatch:release driftwatch-capture:release driftwatch-firewall:release; do
             trivy image --scanners vuln --ignore-unfixed=false --severity HIGH,CRITICAL --exit-code 0 --format table "$image"

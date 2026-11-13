@@ -95,8 +95,8 @@ given in the advisory unless you prefer otherwise.
 
 Hardening guidance for deployments is in [docs/DEPLOY.md](docs/DEPLOY.md).
 [docs/IMAGE_SECURITY.md](docs/IMAGE_SECURITY.md) documents the native package
-locks, the two upstream backports and the image vulnerability gate, which also
-fails on HIGH and CRITICAL findings that the vendor has not fixed yet.
+locks, how to refresh them and the image vulnerability gate, which also fails on
+HIGH and CRITICAL findings that the vendor has not fixed yet.
 
 ## Secret scanning
 

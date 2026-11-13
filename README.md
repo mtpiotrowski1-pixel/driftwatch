@@ -45,8 +45,8 @@ docker compose up --build -d
 ```
 
 The helper writes a `.env` with three independent random keys and refuses to
-overwrite an existing file. The first build compiles two patched native
-libraries, so it takes several minutes.
+overwrite an existing file. The first build downloads Chromium and the
+system packages, so it takes several minutes.
 
 Open http://localhost:8000 and register. The first account on a fresh instance
 becomes its administrator. Registration then closes and further users are
@@ -164,6 +164,6 @@ from the copyright holder; contact the author through
 [GitHub](https://github.com/mtpiotrowski1-pixel). This is a source-available
 license, not an OSI-approved open-source license.
 
-Dependencies, bundled fonts and the patched native libraries keep their own
-licenses, listed in [third-party notices](THIRD_PARTY_NOTICES.md). The API
+Dependencies, bundled fonts and system packages keep their own licenses,
+listed in [third-party notices](THIRD_PARTY_NOTICES.md). The API
 image serves the source it was built from at `/driftwatch-source.tar.gz`.

@@ -187,16 +187,16 @@
     {
       "cve": "CVE-2026-88806",
       "component": "libx11",
-      "disposition": "upstream_backport",
-      "implementation": "1.8.13-r7 rebuilt with hash-verified upstream MR309; original version retained",
+      "disposition": "updated",
+      "implementation": "Wolfi libx11 1.8.14; patched locally with upstream MR309 until that release",
       "primary": "https://gitlab.freedesktop.org/xorg/lib/libx11/-/merge_requests/309",
       "tracker": "https://security-tracker.debian.org/tracker/CVE-2026-88806"
     },
     {
       "cve": "CVE-2026-88807",
       "component": "libxrender",
-      "disposition": "upstream_backport",
-      "implementation": "0.9.12-r9 rebuilt with hash-verified upstream MR19; original version retained",
+      "disposition": "updated",
+      "implementation": "Wolfi libxrender 0.9.13; patched locally with upstream MR19 until that release",
       "primary": "https://gitlab.freedesktop.org/xorg/lib/libxrender/-/merge_requests/19",
       "tracker": "https://security-tracker.debian.org/tracker/CVE-2026-88807"
     }

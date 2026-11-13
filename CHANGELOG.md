@@ -14,6 +14,12 @@ and this project adheres to
   on its first start falls through to the next candidate instead of using the
   whole launch budget. Real-browser tests use Playwright's Chromium. Microsoft
   Edge on the GitHub Ubuntu image caused the failing Linux CI job.
+- Use Wolfi's libX11 1.8.14 and libXrender 0.9.13 instead of local patches of
+  the previous releases, and remove the package-building stage. Refresh the
+  native package locks with a new `docker/native/refresh_locks.sh`, which
+  picks up fixes for advisories published since October. The firewall image
+  upgrades its base packages and requires a minimum zlib version instead of an
+  exact revision that Alpine no longer serves.
 - Reject every key and token published in `.env.example` as production key
   material, including the capture worker token.
 - Leave the per-address login budget untouched by a successful login, and key

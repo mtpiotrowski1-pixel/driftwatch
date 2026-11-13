@@ -7,7 +7,7 @@ from pathlib import Path
 from zoneinfo import ZoneInfo
 
 parser = argparse.ArgumentParser()
-parser.add_argument("role", choices=("api", "worker", "build"))
+parser.add_argument("role", choices=("api", "worker"))
 args = parser.parse_args()
 expected = {}
 for line in Path(f"/native/{args.role}.apk.lock").read_text().splitlines():
@@ -26,10 +26,10 @@ if pyexpat.version_info < (2, 9, 0):
     raise RuntimeError("CPython loaded an older embedded Expat")
 for timezone in ("UTC", "Europe/Warsaw"):
     ZoneInfo(timezone)
-for pattern in () if args.role == "build" else ("libacl.so*", "libcups.so*"):
+for pattern in ("libacl.so*", "libcups.so*"):
     if list(Path("/usr/lib").glob(pattern)):
         raise RuntimeError(f"Unexpected removed library: {pattern}")
-for executable in () if args.role == "build" else ("/usr/bin/perl", "/usr/bin/Xvfb"):
+for executable in ("/usr/bin/perl", "/usr/bin/Xvfb"):
     if Path(executable).exists():
         raise RuntimeError(f"Unexpected removed executable: {executable}")
 print(
@@ -40,7 +40,7 @@ print(
             "inventory": "exact lock",
             "python_expat": pyexpat.EXPAT_VERSION,
             "timezone_database": ["UTC", "Europe/Warsaw"],
-            "removed_surfaces": [] if args.role == "build" else ["ACL", "CUPS", "Perl", "Xvfb"],
+            "removed_surfaces": ["ACL", "CUPS", "Perl", "Xvfb"],
         }
     )
 )

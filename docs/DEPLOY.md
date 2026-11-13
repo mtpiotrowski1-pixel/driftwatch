@@ -20,8 +20,8 @@ Only the credential-free firewall has `NET_ADMIN`. The two containers share
 network namespace, not application data or process namespace.
 
 The Docker Python targets use the pinned Wolfi/glibc runtime described in
-[IMAGE_SECURITY.md](IMAGE_SECURITY.md), including two verified X.org upstream
-backports. Linux x86_64 is the validated native image architecture; other
+[IMAGE_SECURITY.md](IMAGE_SECURITY.md). Linux x86_64 is the validated native
+image architecture; other
 architectures require new locks and compatibility tests. The worker installs
 Playwright's headless shell with Noto Latin/Polish, Arabic, CJK and emoji fonts;
 the source installer retains full Chromium for the local headed picker.

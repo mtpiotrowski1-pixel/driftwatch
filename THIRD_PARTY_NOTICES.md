@@ -27,17 +27,12 @@ any corresponding-source, attribution and replacement requirements applicable
 to those components. A lockfile identifies versions; it does not replace the
 upstream license text.
 
-## Native browser libraries and patches
+## Operating system packages
 
-The reference container builds patched X.Org libX11 and libXrender. Upstream
-source archives, patch URLs and hashes are recorded in [docker](docker). Copies
-of the upstream [libX11 license](docker/native/licenses/libx11-COPYING.txt) and
-[libXrender license](docker/native/licenses/libxrender-COPYING.txt) accompany the
-source and attributed patches, and
-the build preserves each library's `COPYING` file under `/usr/share/licenses`.
-These libraries and attributed upstream patches retain their upstream licenses.
-Their patch bytes are not relicensed by the project's PolyForm license. See
-[image security](docs/IMAGE_SECURITY.md) for source and installed-binary provenance.
+The container images install Wolfi and Alpine packages, including Chromium's
+system libraries, from the vendors' signed repositories. Each package keeps its
+upstream license. The installed versions are listed in
+[docker/native](docker/native) and in the SBOMs that CI generates for each image.
 
 ## Project artwork
 
