@@ -117,6 +117,8 @@ docs/              guides, architecture and decision records
 - [ADR 003](docs/adr/003-ai-boundary.md): what the model is allowed to decide,
   how each verdict keeps its model, prompt and input hash, and why an unknown
   price is shown as unknown rather than zero.
+- [ADR 004](docs/adr/004-optional-billing.md): why a self-hosted tool carries an
+  optional billing module, and how it fails closed.
 - [Architecture](docs/ARCHITECTURE.md): process boundaries, tenant isolation,
   sessions, and the browser sandbox.
 - [tests/](tests): lease loss and retry exhaustion under a controlled clock,
