@@ -7,7 +7,7 @@ import { Field, Input } from "@/components/ui/field";
 import { SettingsSection } from "@/components/ui/settings-section";
 import { useToast } from "@/components/ui/toast";
 import { useT } from "@/i18n";
-import { ApiError } from "@/lib/api";
+import { errorMessage } from "@/lib/errors";
 import { useCurrentUser, useTotpDisable, useTotpEnable, useTotpSetup } from "@/lib/queries";
 import type { TotpSetup } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -27,10 +27,8 @@ export function TwoFactorCard({ enable }: { enable: TwoFactorEnable }) {
   const [disableAuthOpen, setDisableAuthOpen] = useState(false);
 
   const enabled = user?.totp_enabled ?? false;
-  const error =
-    (setup.error ?? enable.error ?? disable.error) instanceof ApiError
-      ? ((setup.error ?? enable.error ?? disable.error) as ApiError).message
-      : null;
+  const failure = setup.error ?? enable.error ?? disable.error;
+  const error = failure ? errorMessage(failure, t) : null;
 
   function startEnrollment() {
     setup.mutate(undefined, { onSuccess: (data) => setEnrollment(data) });

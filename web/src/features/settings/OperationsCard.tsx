@@ -57,7 +57,9 @@ function RestoreControl() {
           submitVariant="danger"
           requestContext={instanceRequestContext}
           onVerified={() => setStep("pick")}
-          onClose={() => setStep("idle")}
+          // StepUpDialog closes itself after a successful verification; only a
+          // cancel while still authenticating returns to idle.
+          onClose={() => setStep((current) => (current === "auth" ? "idle" : current))}
         />
       ) : null}
       {step === "pick" ? (

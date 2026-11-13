@@ -37,13 +37,14 @@ vi.mock("@/components/StepUpDialog", () => ({
     onClose,
   }: {
     title: string;
-    onVerified: () => void;
+    onVerified: () => void | Promise<void>;
     onClose: () => void;
   }) => (
+    // Same order as the real dialog: await the action, then close and unmount.
     <button
       type="button"
-      onClick={() => {
-        onVerified();
+      onClick={async () => {
+        await onVerified();
         onClose();
       }}
     >
@@ -91,6 +92,14 @@ describe("OperatorIdentities", () => {
     mocks.resetTotpMutate.mockReset();
     mocks.revokeSessionsMutate.mockReset();
     mocks.updateMutate.mockReset();
+    for (const mutate of [
+      mocks.inviteMutate,
+      mocks.resetTotpMutate,
+      mocks.revokeSessionsMutate,
+      mocks.updateMutate,
+    ]) {
+      mutate.mockResolvedValue(undefined);
+    }
     mocks.useOperators.mockReturnValue({
       data: operators,
       isLoading: false,
@@ -103,28 +112,28 @@ describe("OperatorIdentities", () => {
       error: null,
     });
     mocks.useUpdateOperator.mockReturnValue({
-      mutate: mocks.updateMutate,
+      mutateAsync: mocks.updateMutate,
       isPending: false,
       error: null,
     });
     mocks.useInviteOperator.mockReturnValue({
-      mutate: mocks.inviteMutate,
+      mutateAsync: mocks.inviteMutate,
       isPending: false,
       error: null,
     });
     mocks.useRevokeOperatorSessions.mockReturnValue({
-      mutate: mocks.revokeSessionsMutate,
+      mutateAsync: mocks.revokeSessionsMutate,
       isPending: false,
       error: null,
     });
     mocks.useResetOperatorTotp.mockReturnValue({
-      mutate: mocks.resetTotpMutate,
+      mutateAsync: mocks.resetTotpMutate,
       isPending: false,
       error: null,
     });
   });
 
-  it("shows truthful operator, MFA, activation, and onboarding states", () => {
+  it("shows each operator's MFA, activation and onboarding state", () => {
     renderPanel();
 
     expect(screen.getByRole("heading", { name: "Operator identities" })).toBeInTheDocument();
@@ -164,45 +173,37 @@ describe("OperatorIdentities", () => {
     expect(screen.queryByText(/setup link sent/i)).not.toBeInTheDocument();
   });
 
-  it("step-up gates invitation resend and reactivation", async () => {
+  it("confirms a resent invitation and a reactivation after the dialog closes", async () => {
     const user = userEvent.setup();
     renderPanel();
 
     await user.click(screen.getAllByRole("button", { name: "Send setup link" })[0]);
     await user.click(screen.getByRole("button", { name: "Verify Queue a new setup link?" }));
-    expect(mocks.inviteMutate).toHaveBeenCalledWith(undefined, {
-      onSuccess: expect.any(Function),
-      onError: expect.any(Function),
-    });
+    expect(mocks.inviteMutate).toHaveBeenCalledTimes(1);
+    expect(await screen.findByText("Setup link queued")).toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: "Reactivate" }));
     await user.click(screen.getByRole("button", { name: "Verify Reactivate this operator?" }));
-    expect(mocks.updateMutate).toHaveBeenCalledWith(
-      { is_active: true },
-      { onSuccess: expect.any(Function), onError: expect.any(Function) },
-    );
+    expect(mocks.updateMutate).toHaveBeenCalledWith({ is_active: true });
+    expect(await screen.findByText("Operator reactivated")).toBeInTheDocument();
   });
 
-  it("step-up gates operator session revocation and two-factor recovery", async () => {
+  it("confirms session revocation and two-factor reset for the current operator", async () => {
     const user = userEvent.setup();
     renderPanel();
 
     await user.click(screen.getAllByRole("button", { name: "Revoke sessions" })[0]);
     await user.click(screen.getByRole("button", { name: "Verify Revoke all sessions?" }));
     expect(mocks.useRevokeOperatorSessions).toHaveBeenCalledWith(1, true);
-    expect(mocks.revokeSessionsMutate).toHaveBeenCalledWith(undefined, {
-      onSuccess: expect.any(Function),
-      onError: expect.any(Function),
-    });
+    expect(mocks.revokeSessionsMutate).toHaveBeenCalledTimes(1);
+    expect(await screen.findByText("All sessions revoked")).toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: "Reset two-factor" }));
     await user.click(
       screen.getByRole("button", { name: "Verify Reset two-factor authentication?" }),
     );
     expect(mocks.useResetOperatorTotp).toHaveBeenCalledWith(1, true);
-    expect(mocks.resetTotpMutate).toHaveBeenCalledWith(undefined, {
-      onSuccess: expect.any(Function),
-      onError: expect.any(Function),
-    });
+    expect(mocks.resetTotpMutate).toHaveBeenCalledTimes(1);
+    expect(await screen.findByText("Two-factor authentication reset")).toBeInTheDocument();
   });
 });

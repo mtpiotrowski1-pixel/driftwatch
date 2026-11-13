@@ -21,7 +21,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { EmptyState, ErrorState, PageLoader, Spinner } from "@/components/ui/feedback";
 import { useToast } from "@/components/ui/toast";
-import { useT } from "@/i18n";
+import { useT, useTp } from "@/i18n";
 import { ApiError } from "@/lib/api";
 import { canCreateSite, canEditSite } from "@/lib/capabilities";
 import { useInOrgContext, useOrg } from "@/lib/orgContext";
@@ -66,7 +66,12 @@ export function Dashboard() {
   if (sites.isLoading || changes.isLoading || actionRequired.isLoading) {
     return <PageLoader label={t("dashboard.loading")} />;
   }
-  if (sites.isError || (changes.isError && !changes.data) || actionRequired.isError) {
+  // Polling failures keep the cached view; DataFreshness marks it stale.
+  if (
+    (sites.isError && !sites.data) ||
+    (changes.isError && !changes.data) ||
+    (actionRequired.isError && !actionRequired.data)
+  ) {
     return (
       <ErrorState
         onRetry={() => {
@@ -257,13 +262,14 @@ function ActionQueue({
   siteName: (siteId: number) => string;
 }) {
   const t = useT();
+  const tp = useTp();
   return (
     <section className="overflow-hidden rounded-lg border border-rose-400/30 bg-ink-900">
       <div className="flex items-start gap-3 border-b border-rose-400/20 bg-rose-400/10 px-4 py-3.5 sm:px-5">
         <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-rose-400" />
         <div className="min-w-0 flex-1">
           <h2 className="font-semibold text-mist-100">
-            {t("dashboard.attentionTitle", { count: changes.length })}
+            {tp("dashboard.attentionTitle", changes.length)}
           </h2>
           <p className="mt-0.5 text-xs text-mist-500">{t("dashboard.attentionDescription")}</p>
         </div>

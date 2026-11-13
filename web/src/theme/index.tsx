@@ -8,6 +8,8 @@ import {
   type ReactNode,
 } from "react";
 
+import { readStorage, writeStorage } from "@/lib/storage";
+
 export type Theme = "indigo" | "emerald" | "violet" | "sunset" | "rose";
 
 export interface ThemeOption {
@@ -38,7 +40,7 @@ interface ThemeContextValue {
 const ThemeContext = createContext<ThemeContextValue | null>(null);
 
 function initialTheme(): Theme {
-  const stored = localStorage.getItem(STORAGE_KEY);
+  const stored = readStorage(STORAGE_KEY);
   return stored && THEME_VALUES.has(stored) ? (stored as Theme) : "indigo";
 }
 
@@ -59,7 +61,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   }, [theme]);
 
   const setTheme = useCallback((next: Theme) => {
-    localStorage.setItem(STORAGE_KEY, next);
+    writeStorage(STORAGE_KEY, next);
     setThemeState(next);
   }, []);
 

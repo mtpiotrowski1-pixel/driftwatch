@@ -90,7 +90,8 @@ export function Login() {
     setWorkspaceError(null);
     try {
       if (!account.is_superadmin || !account.organization_id) {
-        throw new Error(t("login.initialWorkspaceFailed"));
+        setWorkspaceError(t("login.initialWorkspaceFailed"));
+        return;
       }
       // Use the normal server-confirmed organization transition. It binds the
       // real session and clears context-sensitive queries before any tenant UI.

@@ -126,7 +126,9 @@ function SiteWorkspace() {
 
   if (site.isLoading || changes.isLoading) return <PageLoader label={t("sitedetail.loading")} />;
   const siteMissing = site.error instanceof ApiError && site.error.status === 404;
-  if ((site.isError && !siteMissing) || (changes.isError && !changes.data))
+  // These queries poll; a failed refresh keeps the cached page (and any open
+  // edit form) and is reported by DataFreshness instead.
+  if ((site.isError && !siteMissing && !site.data) || (changes.isError && !changes.data))
     return (
       <ErrorState
         onRetry={() => {
@@ -135,7 +137,7 @@ function SiteWorkspace() {
         }}
       />
     );
-  if (!site.data) {
+  if (!site.data || siteMissing) {
     return (
       <EmptyState
         icon={<History className="h-5 w-5" />}
@@ -441,7 +443,7 @@ function ChangeView({ changeId, siteId, editable }: { changeId: number; siteId: 
   const t = useT();
 
   if (change.isLoading) return <PageLoader label={t("sitedetail.change.loading")} />;
-  if (change.isError || !change.data) {
+  if (!change.data) {
     return <ErrorState onRetry={() => void change.refetch()} />;
   }
 

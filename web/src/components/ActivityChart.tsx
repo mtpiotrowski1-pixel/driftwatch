@@ -1,7 +1,7 @@
 import { useId } from "react";
 import { Area, AreaChart, ResponsiveContainer, Tooltip, XAxis, type TooltipProps } from "recharts";
 
-import { useT } from "@/i18n";
+import { useT, useTp } from "@/i18n";
 import type { Change } from "@/lib/types";
 import { activeLocale, parseApiTimestamp } from "@/lib/utils";
 
@@ -57,13 +57,14 @@ function ChartTooltip({ active, payload, label }: TooltipProps<number, string>) 
 
 export function ActivityChart({ changes }: { changes: Change[] }) {
   const t = useT();
+  const tp = useTp();
   const captionId = useId();
   const series = buildSeries(changes);
   const total = series.reduce((sum, day) => sum + day.count, 0);
   return (
     <figure className="min-w-0" aria-labelledby={captionId}>
       <figcaption id={captionId} className="sr-only">
-        {t("dashboard.activitySummary", { count: total, days: DAYS })}
+        {tp("dashboard.activitySummary", total, { days: DAYS })}
       </figcaption>
       <div className="h-[120px] min-w-0" aria-hidden="true">
         <ResponsiveContainer width="100%" height="100%">

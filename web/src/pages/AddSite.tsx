@@ -225,7 +225,12 @@ export function AddSite() {
                   <Field label={t("addsite.urlLabel")} htmlFor="url">
                     <Input
                       id="url"
-                      type="url"
+                      // Not type="url": the browser would reject the scheme-less
+                      // address the placeholder suggests before submit can add https://.
+                      type="text"
+                      inputMode="url"
+                      autoComplete="url"
+                      spellCheck={false}
                       required
                       value={url}
                       onChange={(event) => setUrl(event.target.value)}

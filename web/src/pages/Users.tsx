@@ -699,15 +699,12 @@ function DeleteUserDialog({
 }) {
   const t = useT();
   const deleteUser = useDeleteUser(requestContext);
-  const { notify } = useToast();
 
-  function handleDelete() {
-    deleteUser.mutate(user.id, {
-      onSuccess: onDeleted,
-      onError: (error) => {
-        if (error instanceof ApiError) notify(error.message, "error");
-      },
-    });
+  // StepUpDialog awaits this promise: a failure stays visible in the dialog, and
+  // success is reported by the parent, which outlives the dialog.
+  async function handleDelete() {
+    await deleteUser.mutateAsync(user.id);
+    onDeleted();
   }
 
   return (

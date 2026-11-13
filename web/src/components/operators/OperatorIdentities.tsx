@@ -21,7 +21,7 @@ import { EmptyState, ErrorNote, ErrorState, PageLoader, Spinner } from "@/compon
 import { Field, Input } from "@/components/ui/field";
 import { useToast } from "@/components/ui/toast";
 import { useT } from "@/i18n";
-import { ApiError, instanceRequestContext } from "@/lib/api";
+import { instanceRequestContext } from "@/lib/api";
 import {
   useCreateOperator,
   useInviteOperator,
@@ -396,42 +396,28 @@ function OperatorActionDialog({
   const revokeSessions = useRevokeOperatorSessions(operator.id, isSelf);
   const resetTotp = useResetOperatorTotp(operator.id, isSelf);
 
-  function run() {
+  // StepUpDialog awaits this and unmounts the dialog afterwards, so per-call
+  // mutation callbacks would never run. A failure stays visible in the dialog.
+  async function run() {
     if (kind === "invite") {
-      invite.mutate(undefined, {
-        onSuccess: () => notify(t("access.operators.toast.inviteQueued")),
-        onError: (error) => notify(apiMessage(error, t("access.operators.error")), "error"),
-      });
-      return;
+      await invite.mutateAsync();
+      notify(t("access.operators.toast.inviteQueued"));
+    } else if (kind === "revoke") {
+      await revokeSessions.mutateAsync();
+      notify(t("access.security.sessionsRevokedDone"));
+    } else if (kind === "reset-totp") {
+      await resetTotp.mutateAsync();
+      notify(t("access.security.totpResetDone"));
+    } else {
+      await update.mutateAsync({ is_active: kind === "reactivate" });
+      notify(
+        t(
+          kind === "reactivate"
+            ? "access.operators.toast.reactivated"
+            : "access.operators.toast.deactivated",
+        ),
+      );
     }
-    if (kind === "revoke") {
-      revokeSessions.mutate(undefined, {
-        onSuccess: () => notify(t("access.security.sessionsRevokedDone")),
-        onError: (error) => notify(apiMessage(error, t("access.operators.error")), "error"),
-      });
-      return;
-    }
-    if (kind === "reset-totp") {
-      resetTotp.mutate(undefined, {
-        onSuccess: () => notify(t("access.security.totpResetDone")),
-        onError: (error) => notify(apiMessage(error, t("access.operators.error")), "error"),
-      });
-      return;
-    }
-    update.mutate(
-      { is_active: kind === "reactivate" },
-      {
-        onSuccess: () =>
-          notify(
-            t(
-              kind === "reactivate"
-                ? "access.operators.toast.reactivated"
-                : "access.operators.toast.deactivated",
-            ),
-          ),
-        onError: (error) => notify(apiMessage(error, t("access.operators.error")), "error"),
-      },
-    );
   }
 
   const copy = operatorActionCopy(kind);
@@ -473,8 +459,4 @@ function operatorActionCopy(kind: OperatorAction): {
     description: `access.operators.confirm.${kind}Description`,
     submit: `access.operators.${kind}`,
   };
-}
-
-function apiMessage(error: unknown, fallback: string): string {
-  return error instanceof ApiError ? error.message : fallback;
 }

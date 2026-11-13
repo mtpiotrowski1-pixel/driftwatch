@@ -8,6 +8,8 @@ import {
   type ReactNode,
 } from "react";
 
+import { readStorage, writeStorage } from "@/lib/storage";
+
 import { en } from "./en";
 import { pl } from "./pl";
 
@@ -55,7 +57,7 @@ interface I18nContextValue {
 const I18nContext = createContext<I18nContextValue | null>(null);
 
 function initialLang(): Lang {
-  const stored = localStorage.getItem(STORAGE_KEY);
+  const stored = readStorage(STORAGE_KEY);
   if (stored === "en" || stored === "pl") return stored;
   return navigator.language.toLowerCase().startsWith("pl") ? "pl" : "en";
 }
@@ -75,7 +77,7 @@ export function I18nProvider({ children }: { children: ReactNode }) {
   }, [lang]);
 
   const setLang = useCallback((next: Lang) => {
-    localStorage.setItem(STORAGE_KEY, next);
+    writeStorage(STORAGE_KEY, next);
     // Date/number formatters read html.lang outside React. Update their source
     // before children render the new translation context, rather than one effect later.
     document.documentElement.lang = next;
@@ -124,14 +126,7 @@ export function useTp(): TranslatePlural {
 }
 
 /** Translate outside the React tree (e.g. the top-level error boundary, which
- * renders above the provider). Reads the persisted language directly. */
+ * renders above the provider), using the same language choice as the provider. */
 export function translateStatic(key: string): string {
-  let lang: Lang = "en";
-  try {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    if (stored === "pl") lang = "pl";
-  } catch {
-    lang = "en";
-  }
-  return DICTIONARIES[lang][key] ?? en[key] ?? key;
+  return DICTIONARIES[initialLang()][key] ?? en[key] ?? key;
 }
