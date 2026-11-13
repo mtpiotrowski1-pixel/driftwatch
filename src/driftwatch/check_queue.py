@@ -449,8 +449,9 @@ async def fail_check(
     error: str,
     now: datetime,
     max_attempts: int,
+    retry: bool = True,
 ) -> CheckJobStatus | None:
-    exhausted = job.attempt_count >= max_attempts
+    exhausted = not retry or job.attempt_count >= max_attempts
     status = CheckJobStatus.DEAD if exhausted else CheckJobStatus.PENDING
     available_at = None if exhausted else now + _retry_delay(job.attempt_count)
     failed = (

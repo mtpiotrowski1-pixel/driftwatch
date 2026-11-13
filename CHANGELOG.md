@@ -51,6 +51,9 @@ and this project adheres to
   and legacy interaction-step parsing.
 - Update certifi, dnspython, filelock, msgpack, soupsieve, uv and the frontend
   lock to versions without known advisories.
+- Close a manual check whose capture failed instead of retrying it in the
+  background. Each retry extended the site's failure streak, so one click
+  could end in a "site appears down" alert.
 
 ### Public portfolio license
 

@@ -44,7 +44,9 @@ original incident. A dead scheduled check also pauses scheduled checks of its
 site: the site's due window stays recorded until a redrive or a manual check
 succeeds, so a site that keeps failing does not produce a new dead job every
 retry cycle. A check cancelled because its site was disabled or its organization
-suspended does not pause scheduling once the site is enabled again.
+suspended does not pause scheduling once the site is enabled again. A manual
+check whose capture fails becomes dead after that attempt: the person who
+started it already has the result, and it is not retried in the background.
 
 Analysis states distinguish `pending`, `processing`, `error`, `quota_blocked`
 from `succeeded`, `disabled`, `not_requested` and `skipped_no_delivery`.
