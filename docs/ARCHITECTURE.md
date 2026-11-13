@@ -169,8 +169,8 @@ Roles are:
 Fresh first-account registration atomically claims a singleton
 `InstanceBootstrap` record and creates an operator who also administers the
 default organization. The durable completion marker prevents a restart or
-account deletion from reopening initial setup. The migration closes setup for
-existing databases with users or organizations; it never promotes a legacy user.
+account deletion from reopening initial setup. The initial migration creates
+that record in the open state; no migration promotes an existing user.
 Loopback setup is permitted by default; a non-loopback runtime needs explicit
 `initial_admin_signup_enabled` or a seeded operator. Ongoing public registration
 is a separate, closed-by-default switch and cannot grant the operator role.

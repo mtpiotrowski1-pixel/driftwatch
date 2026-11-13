@@ -544,7 +544,7 @@ def _protect_audit_event(*_: object) -> None:
     """Reject ORM flushes that update or delete audit rows.
 
     Bulk ``update()``/``delete()`` statements bypass mapper events; the database
-    triggers added in migration ``d0f6b8c2a4e1`` cover those."""
+    triggers created by the initial migration cover those."""
     raise RuntimeError("Audit events are append-only")
 
 

@@ -10,6 +10,11 @@ and this project adheres to
 
 ### Review fixes
 
+- Replace the 29 pre-release migrations with one 1.0 baseline generated from the
+  models, plus the singleton rows and the append-only ledger triggers they cannot
+  express. Its schema matches the previous chain apart from database-level column
+  defaults, which the ORM supplies, and five index names now taken from the
+  models. Databases created by earlier development builds must be recreated.
 - Give each browser probe its own time limit, so an installed browser that hangs
   on its first start falls through to the next candidate instead of using the
   whole launch budget. Real-browser tests use Playwright's Chromium. Microsoft

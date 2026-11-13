@@ -37,6 +37,7 @@ from driftwatch.models import (
     AccountEmailJob,
     AuditEvent,
     BillingCustomer,
+    BillingEvent,
     BillingPrice,
     Organization,
     Plan,
@@ -376,6 +377,36 @@ async def test_postgres_audit_ledger_rejects_database_level_mutation(
         stored = await session.get(AuditEvent, event_id)
         assert stored is not None
         assert stored.action == "postgres.test"
+
+
+async def test_postgres_billing_ledger_rejects_database_level_mutation(
+    postgres_database: Database,
+) -> None:
+    async with postgres_database.session() as session:
+        event = BillingEvent(
+            provider="stripe",
+            provider_event_id=f"evt_{uuid4().hex}",
+            event_type="invoice.paid",
+            occurred_at=datetime.now(UTC),
+            payload_sha256="0" * 64,
+        )
+        session.add(event)
+        await session.commit()
+        event_id = event.id
+
+    for statement in (
+        "UPDATE billing_events SET event_type = 'tampered' WHERE id = :event_id",
+        "DELETE FROM billing_events WHERE id = :event_id",
+    ):
+        async with postgres_database.session() as session:
+            with pytest.raises(DBAPIError, match="append-only"):
+                await session.execute(text(statement), {"event_id": event_id})
+            await session.rollback()
+
+    async with postgres_database.session() as session:
+        stored = await session.get(BillingEvent, event_id)
+        assert stored is not None
+        assert stored.event_type == "invoice.paid"
 
 
 async def test_postgres_serializes_subscription_events_per_billing_customer(
