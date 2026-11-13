@@ -1,7 +1,7 @@
 ARG DRIFTWATCH_IMAGE_TARGET=runtime
 
 # --- Stage 0: exact source archive for inspection ---------------------------
-FROM alpine:3.24@sha256:294b683cb724975bec92580e1e685676bd4b50bda910ddb8c51d4cabeaec77e6 AS source
+FROM alpine:3.24@sha256:f59abe656b692d901e184be3445e084786602108599d2a51d229c0f5a48c71bf AS source
 WORKDIR /source/driftwatch
 COPY . .
 RUN tar -czf /driftwatch-source.tar.gz -C /source driftwatch
@@ -60,7 +60,7 @@ RUN pip install --no-deps /wheels/driftwatch-*.whl \
     && rm -rf /wheels
 
 # The sole privileged component owns packet filtering, not application data.
-FROM alpine:3.24@sha256:294b683cb724975bec92580e1e685676bd4b50bda910ddb8c51d4cabeaec77e6 AS capture-firewall
+FROM alpine:3.24@sha256:f59abe656b692d901e184be3445e084786602108599d2a51d229c0f5a48c71bf AS capture-firewall
 # Alpine keeps only the newest revision of each package, so an exact pin breaks
 # the build at the next update. Upgrade the base packages instead, and keep a
 # floor on zlib for the CVE-2026-85091 fix.
