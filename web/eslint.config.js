@@ -13,6 +13,11 @@ export default tseslint.config(
       globals: globals.browser,
     },
     plugins: { "react-hooks": reactHooks },
-    rules: reactHooks.configs.recommended.rules,
+    // The classic hook rules. The plugin's recommended preset also enables the
+    // React Compiler rules, which are not adopted yet.
+    rules: {
+      "react-hooks/rules-of-hooks": "error",
+      "react-hooks/exhaustive-deps": "warn",
+    },
   },
 );

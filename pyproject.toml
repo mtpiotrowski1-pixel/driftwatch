@@ -1,5 +1,5 @@
 [build-system]
-requires = ["hatchling==1.31.0", "editables==0.6"]
+requires = ["hatchling==1.33.0", "editables==0.6"]
 build-backend = "hatchling.build"
 
 [project]
@@ -52,8 +52,8 @@ dev = [
     "ruff>=0.7",
     "mypy>=1.13",
     "pip-audit>=2.7",
-    "pip>=26.2",
-    "uv==0.13.4",
+    "pip>=26.3",
+    "uv==0.13.7",
 ]
 
 [project.scripts]

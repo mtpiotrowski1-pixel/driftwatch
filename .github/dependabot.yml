@@ -1,17 +1,11 @@
 version: 2
 
-updates:
-  - package-ecosystem: pip
-    directory: /
-    schedule:
-      interval: weekly
-    open-pull-requests-limit: 5
-    groups:
-      python-minor-patch:
-        update-types:
-          - minor
-          - patch
+# Python is not listed. Dependabot edits pyproject.toml and the .in files but not
+# the uv-compiled requirements*.lock files, so its pull requests always fail the
+# lockfile check. pip-audit fails CI on a vulnerable lock instead, and
+# CONTRIBUTING.md describes the uv commands that refresh the locks.
 
+updates:
   - package-ecosystem: npm
     directory: /web
     schedule:
@@ -27,10 +21,26 @@ updates:
     directory: /
     schedule:
       interval: weekly
-    open-pull-requests-limit: 5
+    groups:
+      github-actions:
+        patterns:
+          - "*"
 
   - package-ecosystem: docker
     directory: /
     schedule:
       interval: weekly
-    open-pull-requests-limit: 5
+    groups:
+      base-images:
+        patterns:
+          - "*"
+    ignore:
+      # The images target Python 3.12 and Node's LTS line; moving either is a
+      # deliberate change, not a routine bump.
+      - dependency-name: python
+        update-types:
+          - version-update:semver-major
+          - version-update:semver-minor
+      - dependency-name: node
+        update-types:
+          - version-update:semver-major
