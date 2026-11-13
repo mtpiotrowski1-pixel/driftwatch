@@ -352,6 +352,10 @@ async def claim_next_check(
                     SiteCheckJob.enqueued_at.asc(),
                     SiteCheckJob.id.asc(),
                 )
+                # Without OF, PostgreSQL also locks the joined organization and
+                # site rows. That keeps is_active and enabled fixed until this
+                # claim commits, and the organization update below cannot wait:
+                # an organization locked elsewhere is skipped with its jobs.
                 .with_for_update(skip_locked=True)
                 .limit(1)
             )
