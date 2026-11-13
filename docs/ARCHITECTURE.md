@@ -293,9 +293,12 @@ Interaction `fill` values are encrypted in `InteractionSecret`. Site JSON and
 ordinary API responses contain only opaque references. The clear value exists
 transiently inside the worker request. The worker returns bounded raw HTML, which
 may reflect that value. Before storing, comparing or sending content to AI, the
-application redacts plaintext and supported encodings in the decoded DOM. This
-is best-effort removal of known reflections; the approved page already received
-the value and can transform it. Error messages and logs do not copy fill values.
+application redacts plaintext and supported encodings in the decoded DOM. A
+value shorter than eight characters is redacted only where it is a whole text
+node or attribute value, because inside other text it would also replace
+unrelated content, such as the digits of a year. This is best-effort removal of
+known reflections; the approved page already received the value and can
+transform it. Error messages and logs do not copy fill values.
 
 Global body limits cover ordinary API requests. SQLite restore and branding
 bitmap uploads use bounded streaming raw bodies so authentication runs before

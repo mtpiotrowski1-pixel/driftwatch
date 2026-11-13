@@ -30,6 +30,10 @@ if TYPE_CHECKING:
     from driftwatch.schemas import InteractionStepIn
 
 _ENVELOPE_VERSION = 2
+# Shorter fill values (an age, a country code, a PIN) also occur inside
+# unrelated page content, such as a year or a price. In captured markup they are
+# redacted only where they are a whole text node or attribute value.
+_INLINE_REDACTION_MIN_LENGTH = 8
 
 
 class InteractionSecretUnavailable(RuntimeError):
@@ -183,32 +187,22 @@ async def resolve_site_interaction_steps(
 
 
 def redact_resolved_step_values(message: str, steps: Sequence[dict[str, object]]) -> str:
-    """Remove resolved values and common encodings before data leaves capture.
+    """Remove every resolved value and its common encodings from an error message.
 
-    This is used for both errors and captured markup. A monitored page can echo
-    an entered password or token into its DOM; persisting that reflection would
-    bypass the encrypted interaction vault.
+    A browser or capture adapter can repeat its arguments in an exception.
+    Diagnostics lose nothing important when a short value is also replaced
+    inside other words, so every value is removed wherever it occurs.
     """
+    return _replace_variants(message, _fill_values(steps))
 
-    values = {
-        value
-        for step in steps
-        if step.get("action") == "fill" and isinstance((value := step.get("value")), str) and value
-    }
-    variants = {
-        variant
-        for value in values
-        for variant in (
-            value,
-            html.escape(value, quote=True),
-            html.escape(value, quote=False),
-            quote(value, safe=""),
-        )
-        if variant
-    }
-    for variant in sorted(variants, key=len, reverse=True):
-        message = message.replace(variant, "[REDACTED]")
-    return message
+
+def redact_raw_markup(markup: str, steps: Sequence[dict[str, object]]) -> str:
+    """Remove long resolved values from markup before it is parsed.
+
+    Short values are left to :func:`redact_captured_html`: replacing them in raw
+    markup could also rewrite tag names and attribute values.
+    """
+    return _replace_variants(markup, _inline_values(_fill_values(steps)))
 
 
 def redact_captured_html(markup: str, steps: Sequence[dict[str, object]]) -> str:
@@ -216,26 +210,65 @@ def redact_captured_html(markup: str, steps: Sequence[dict[str, object]]) -> str
 
     Raw string replacement cannot cover every browser-valid entity spelling.
     Parsing first lets us compare the values that extraction would actually
-    persist. This covers reflected plaintext/common encodings; it cannot stop
-    a page that already received a value from intentionally transforming it.
+    persist. A monitored page can echo an entered password or token into its
+    DOM, and persisting that reflection would bypass the encrypted vault. This
+    covers reflected plaintext and common encodings; it cannot stop a page that
+    already received a value from intentionally transforming it.
     """
-    if not any(step.get("action") == "fill" and step.get("value") for step in steps):
+    values = _fill_values(steps)
+    if not values:
         return markup
+    inline = _inline_values(values)
+    whole = {variant for value in values for variant in _variants(value)}
+
+    def redact(text: str) -> str:
+        stripped = text.strip()
+        if stripped in whole:
+            return text.replace(stripped, "[REDACTED]")
+        return _replace_variants(text, inline)
+
     soup = BeautifulSoup(markup, "html.parser")
     for node in soup.find_all(string=True):
         original = str(node)
-        redacted = redact_resolved_step_values(original, steps)
+        redacted = redact(original)
         if redacted != original:
             node.replace_with(redacted)
     for tag in soup.find_all():
         for key, attribute in list(tag.attrs.items()):
             if isinstance(attribute, str):
-                tag.attrs[key] = redact_resolved_step_values(attribute, steps)
+                tag.attrs[key] = redact(attribute)
             elif isinstance(attribute, list):
-                tag.attrs[key] = AttributeValueList(
-                    [redact_resolved_step_values(str(item), steps) for item in attribute]
-                )
+                tag.attrs[key] = AttributeValueList([redact(str(item)) for item in attribute])
     return str(soup)
+
+
+def _fill_values(steps: Sequence[dict[str, object]]) -> set[str]:
+    return {
+        value
+        for step in steps
+        if step.get("action") == "fill" and isinstance((value := step.get("value")), str) and value
+    }
+
+
+def _inline_values(values: set[str]) -> set[str]:
+    return {value for value in values if len(value) >= _INLINE_REDACTION_MIN_LENGTH}
+
+
+def _variants(value: str) -> set[str]:
+    encodings = (
+        value,
+        html.escape(value, quote=True),
+        html.escape(value, quote=False),
+        quote(value, safe=""),
+    )
+    return {variant for variant in encodings if variant}
+
+
+def _replace_variants(text: str, values: set[str]) -> str:
+    variants = {variant for value in values for variant in _variants(value)}
+    for variant in sorted(variants, key=len, reverse=True):
+        text = text.replace(variant, "[REDACTED]")
+    return text
 
 
 def _encode_envelope(

@@ -64,6 +64,9 @@ and this project adheres to
   The previous id was the first eight bytes of the Fernet signing key. Existing
   `dw1` values stay readable and are rewritten as `dw2` when read; an earlier
   build cannot read `dw2`, so a downgrade needs the pre-upgrade backup.
+- Redact a fill value shorter than eight characters only where it is a whole
+  text node or attribute value. A value such as `18` was replaced inside every
+  year, price and URL of the snapshot, and before parsing even inside tag names.
 
 ### Public portfolio license
 
