@@ -25,7 +25,7 @@ dependencies = [
     "aiosqlite>=0.20",
     # Postgres (e.g. Supabase): asyncpg drives the app, psycopg drives Alembic
     # (its migrations run synchronously). Unused on the default SQLite backend.
-    "asyncpg>=0.30",
+    "asyncpg>=0.32.0",
     "psycopg[binary]>=3.2",
     "pydantic>=2.9",
     "pydantic-settings>=2.6",
