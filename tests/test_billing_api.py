@@ -6,8 +6,9 @@ from datetime import UTC, datetime, timedelta
 import httpx
 import pytest
 import pytest_asyncio
-from sqlalchemy import select
+from sqlalchemy import create_engine, event, select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import Session
 
 from driftwatch.billing.provider import (
     CheckoutRequest,
@@ -675,3 +676,59 @@ async def test_reconciliation_cannot_cross_the_active_support_tenant(
 
     assert response.status_code == 409
     assert provider.reconciliation_calls == []
+
+
+@pytest.mark.asyncio
+async def test_checkout_that_loses_the_insert_race_reuses_the_committed_attempt(
+    billing_client: tuple[httpx.AsyncClient, BillingDouble, object],
+    billing_settings: Settings,
+) -> None:
+    client, provider, app = billing_client
+    organization_id = await _register_and_catalog(client, app)
+    stepped = await client.post("/api/auth/step-up", json={"password": "supersecret123"})
+    assert stepped.status_code == 204
+    database = app.state.db  # type: ignore[attr-defined]
+    async with database.session() as session:
+        owner_id = await session.scalar(select(User.id).where(User.email == "owner@example.com"))
+    payload = _checkout_payload("checkout-double-click")
+    winner = create_engine(billing_settings.database_url.replace("+aiosqlite", ""))
+    inserted: list[int] = []
+
+    # A double click: the other request commits the same attempt on its own
+    # connection after this request found none, just before this one inserts.
+    def commit_the_other_request(session: Session, *_: object) -> None:
+        if inserted or not any(isinstance(row, CheckoutAttempt) for row in session.new):
+            return
+        with winner.begin() as connection:
+            result = connection.execute(
+                CheckoutAttempt.__table__.insert().values(
+                    organization_id=organization_id,
+                    billing_price_id=payload["billing_price_id"],
+                    requested_by_user_id=owner_id,
+                    idempotency_key=payload["idempotency_key"],
+                    terms_version=payload["accepted_terms_version"],
+                    privacy_version=payload["accepted_privacy_version"],
+                    terms_sha256=payload["accepted_terms_sha256"],
+                    privacy_sha256=payload["accepted_privacy_sha256"],
+                    status="pending",
+                    active_marker=True,
+                )
+            )
+            inserted.extend(result.inserted_primary_key)
+
+    event.listen(Session, "before_flush", commit_the_other_request)
+    try:
+        response = await client.post("/api/billing/checkout", json=payload)
+    finally:
+        event.remove(Session, "before_flush", commit_the_other_request)
+        winner.dispose()
+
+    assert inserted
+    assert response.status_code == 200, response.text
+    assert response.json()["url"] == provider.checkout_session.url
+    assert [call.idempotency_key for call in provider.checkout_calls] == [
+        f"checkout:{organization_id}:checkout-double-click"
+    ]
+    async with database.session() as session:
+        attempts = (await session.execute(select(CheckoutAttempt))).scalars().all()
+    assert [(attempt.id, attempt.status) for attempt in attempts] == [(inserted[0], "created")]

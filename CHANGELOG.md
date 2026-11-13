@@ -57,6 +57,9 @@ and this project adheres to
 - Check the OpenAI key and price overrides before reserving an AI check. A
   configuration error used up one reservation on every retry, until the
   monthly limit hid the actual cause.
+- Keep a checkout request working when a concurrent request with the same
+  idempotency key inserts its attempt first. The full rollback expired the
+  objects the request had loaded, and the next read failed with a server error.
 
 ### Public portfolio license
 
