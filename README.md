@@ -1,142 +1,169 @@
 # Driftwatch
 
-<img src="web/public/brand/driftwatch-mark-192.png" alt="Driftwatch" width="80" />
+<img src="web/public/brand/driftwatch-mark-192.png" alt="" width="72" />
 
-Driftwatch is a **self-hosted web change monitor**, started as an internal tool
-and shared as a portfolio project. It watches selected parts of web pages,
-records meaningful changes and keeps the evidence needed to understand each
-result. Chromium captures the page; structured comparison detects changes;
-optional AI adds a summary and significance verdict. Monitoring works without
-an OpenAI key or a paid subscription.
+Driftwatch is a self-hosted monitor for web page changes. You give it a page
+and a CSS selector. It renders the page in Chromium on a schedule, compares the
+selected content with the last good snapshot and notifies you by email or
+webhook when something changed. An OpenAI model can optionally rate whether a
+change matters. Detection does not depend on the model, and the tool runs
+without an API key.
 
-**License: noncommercial use only.** This public portfolio project uses
-[PolyForm Noncommercial 1.0.0](LICENSE). Commercial use requires separate written
-permission from the copyright holder. See [licensing](#license).
+It started as an internal tool and is published here as a portfolio project.
 
-The core workflow is **capture → normalize → compare → record → optionally analyze
-→ deliver**. A failed capture does not replace the previous baseline. A first
-successful capture establishes a baseline rather than inventing a change.
+![Dashboard with synthetic monitoring history](docs/screenshots/dashboard-desktop.jpg)
 
-![Driftwatch dashboard with synthetic monitoring history](docs/screenshots/dashboard-desktop.jpg)
+More screens are in the [interface gallery](docs/screenshots/README.md). The
+screenshots show the Polish interface with synthetic data; English is included.
 
-[Interface gallery](docs/screenshots/README.md) shows the desktop and mobile UI
-from an isolated instance with synthetic data and scripted capture, AI and
-delivery adapters. The [brand kit](brand-kit/README.pl.md) preserves artwork
-originals, concise generation provenance and optional export recipes. Body and
-display fonts are served locally; their upstream sources and licenses are included in
-[web/public/fonts](web/public/fonts).
+## How a check works
 
-## Quick start with Docker
+1. **Capture.** Headless Chromium loads the page, replays any recorded steps
+   such as dismissing a banner, and returns the HTML of the selected region.
+2. **Normalize.** Scripts, navigation, tracking parameters and the regions you
+   chose to ignore are removed.
+3. **Compare.** The content is split into records (table rows, list items,
+   cards) and compared with the previous snapshot. Swapping two prices between
+   rows is a change. Moving whole rows is not.
+   [Monitoring semantics](docs/MONITORING_SEMANTICS.md) lists the rules and
+   where they stop working.
+4. **Record.** The first successful capture becomes the baseline. A failed
+   capture never replaces it.
+5. **Analyze (optional).** The model receives the diff and the rules you wrote,
+   and returns a summary and a verdict: significant or not.
+6. **Deliver.** Email (SMTP or Brevo) and webhooks (generic JSON, Slack,
+   Discord) go through a transactional outbox with retries per destination.
 
-Requirements: Docker Desktop with Linux containers (or Docker Engine + Compose),
-Python 3.12 or newer for the configuration helper, and at least 10 GB of free disk
-space for images, Chromium and build cache. The native image is validated on
-**Linux x86_64**. From a downloaded or cloned checkout:
+## Quick start
+
+You need Docker with Compose v2 (Linux containers, x86_64), Python 3.12 or
+newer for the setup helper, and about 10 GB of free disk space.
 
 ```sh
 python scripts/bootstrap_env.py
 docker compose up --build -d
 ```
 
-The helper creates three independent random keys in an ignored `.env` and enables
-one-time initial setup. It refuses to replace an existing file. The first build
-downloads dependencies and compiles native browser fixes, so it can take several
-minutes.
+The helper writes a `.env` with three independent random keys and refuses to
+overwrite an existing file. The first build compiles two patched native
+libraries, so it takes several minutes.
 
-Open **http://localhost:8000** and register your account. On a fresh installation,
-the first successful registration becomes the instance administrator/operator.
-Further registration is closed by default; invite additional users from the
-panel. Each downloaded instance has its own database and its own first owner.
-An existing database keeps its accounts and permissions. See
-[first-account setup](docs/INSTALL.md#first-account-and-registration) for
-concurrency, recovery and the optional seeded administrator.
+Open http://localhost:8000 and register. The first account on a fresh instance
+becomes its administrator. Registration then closes and further users are
+invited from the panel. After signing in you are asked to enroll TOTP; then
+open **Organizations → Manage** for the default workspace.
 
-After signing in, enroll TOTP and save the recovery codes when prompted. Open
-**Organizations → Manage** for your default workspace. Its first owner is also
-its administrator, so normal monitoring there does not require a support grant.
+For a first monitor, enter a public URL and a CSS selector, choose
+**AI disabled** and **Every change**. The first check stores the baseline. The
+next content change appears in the history.
 
-The reference stack publishes port 8000 to loopback only. Sharing the source on
-GitHub does not require exposing your running instance. Before exposing a host,
-set the real HTTPS base URL and follow [deployment instructions](docs/DEPLOY.md).
+Port 8000 is published on loopback only. Read [Deploy](docs/DEPLOY.md) before
+putting an instance on a public host. [Install](docs/INSTALL.md) covers running
+from source on Windows and Linux, PostgreSQL and upgrades.
 
-For your first monitor, choose a public URL and a stable CSS selector, select
-**AI disabled**, and use **Every change** notifications. The first check becomes
-the baseline; the next content change appears in history. With no recipients,
-you can still inspect the stored changes. [Installation](docs/INSTALL.md) includes
-Windows/Linux source setup, PostgreSQL and updating an existing instance.
+### Demo without Docker or API keys
 
-## What to inspect in this project
+After a source install, one command runs the real pipeline, job queue and
+notification outbox against scripted capture, AI and delivery adapters. The
+network is blocked and the database is temporary.
 
-The backend uses Python, FastAPI, async SQLAlchemy and Alembic with SQLite or
-PostgreSQL. The frontend uses React, TypeScript and Vite; Playwright supplies the
-browser. These are the main design decisions to review:
+```sh
+.venv/bin/python -m driftwatch.demo
+```
 
-- [Monitoring semantics](docs/MONITORING_SEMANTICS.md): ordered content, noisy
-  attributes, selectors, failed captures, linked documents and known limitations.
-- [Deterministic demo](docs/DEMO.md): baseline, noise, failure, recovery and
-  monitoring without AI, using owned fixtures and no paid providers.
-- [Architecture](docs/ARCHITECTURE.md) and [database queue decision](docs/adr/002-db-queue.md):
-  boundaries, durable jobs, leases, retries and crash recovery.
-- [AI boundary](docs/adr/003-ai-boundary.md): provider input, prompt injection,
-  validation, immutable analysis provenance and unknown cost reporting.
-- [Tests](tests): controlled-time lease loss, retry exhaustion, transaction
-  concurrency, tenant authorization, real browser capture and failure behavior.
-- [CI](.github/workflows/ci.yml): Python 3.12 on Windows/Linux, locked dependencies,
-  lint/types/tests, Chromium, PostgreSQL, frontend checks, image audits and a
-  Docker API-to-worker smoke test with socket-level egress assertions.
+On Windows use `.\.venv\Scripts\python.exe -m driftwatch.demo`. The run goes
+through a baseline, ignored noise, a failed analysis, a partial delivery, its
+recovery and a change with AI disabled. It exits with an error if any stage
+behaves differently. See [Demo](docs/DEMO.md).
 
-## Product capabilities
+## Stack and structure
 
-The UI provides projects, selectors, change history, recipient routing, optional
-AI rules, mail/webhooks and an Operations view. English and Polish, five color
-palettes and tenant branding are included. Changes remain visible when analysis
-or delivery fails; unresolved work is retained for recovery. The history keeps
-previous verdicts and the model/rules/input metadata for each actual AI run.
+| Part | Technology |
+| --- | --- |
+| API and scheduler | Python 3.12, FastAPI, async SQLAlchemy, Alembic, APScheduler |
+| Database | SQLite by default, PostgreSQL optional |
+| Capture | Playwright with Chromium, in a separate worker container |
+| Frontend | React 19, TypeScript, Vite, TanStack Query, Tailwind CSS |
+| Checks | pytest, Vitest, Ruff, mypy in strict mode, ESLint, GitHub Actions |
 
-Organizations, roles, invitations, TOTP and audited operator support grants keep
-workspaces separate. The first owner can run a personal workspace; organizations
-also support separate teams. Billing is a retained optional module, disabled by
-default; self-hosted monitoring does not require it. The visual selector picker
-is disabled in the reference Compose deployment; manual selectors work with the
-isolated worker.
+The API process also runs the scheduler. Checks and notifications are queued
+in the application database with leases and a bounded number of retries, so
+there is no message broker to operate. The browser runs in its own container.
+It holds no database, mail, AI or signing credentials, and a firewall sidecar
+blocks its connections to private, loopback and metadata addresses.
 
-## Reliability and limits
+```text
+src/driftwatch/
+  api/             HTTP routes, auth dependencies, origin and body guards
+  monitoring/      capture, cleaning, record extraction, diff, AI analysis
+  notifications/   rendering, email and webhook channels, outbox
+  security/        passwords, tokens, TOTP, encryption, URL checks
+  billing/         optional Stripe integration, disabled by default
+  check_queue.py   durable check jobs: enqueue, lease, retry
+  runner.py        one check from capture to delivery
+  scheduler.py     periodic enqueue, claims, retention
+web/src/           React application
+tests/             backend tests
+docs/              guides, architecture and decision records
+```
 
-Checks and notifications use database-backed leases and bounded retry budgets.
-Expired owners cannot save stale results. A crash after a provider accepted an
-email and before the transaction records it may still cause a duplicate: delivery
-is **at least once**, not exactly once. An exhausted job needs an operator review
-and an audited redrive. [Recovery](docs/RECOVERY.md) describes these states.
+## Where to look
 
-The reference deployment separates application data from the browser. The
-unprivileged browser shares a namespace with a small firewall sidecar that has
-only `NET_ADMIN`; it cannot initiate connections to private, loopback, link-local,
-CGNAT or metadata destinations. Docker's embedded DNS is a narrow resolver
-exception. IPv6 browser egress is currently disabled. Other hosting platforms
-must supply an equivalent tested packet policy. In-process development capture
-has no such isolation. See [Security](SECURITY.md) for the remaining boundaries.
+- [ADR 001](docs/adr/001-record-diff.md): why changes are detected by comparing
+  records with their context instead of raw HTML or a bag of text values.
+- [ADR 002](docs/adr/002-db-queue.md): why the job queue lives in the database,
+  how leases stop a stale worker from saving results, and what that does not
+  guarantee.
+- [ADR 003](docs/adr/003-ai-boundary.md): what the model is allowed to decide,
+  how each verdict keeps its model, prompt and input hash, and why an unknown
+  price is shown as unknown rather than zero.
+- [Architecture](docs/ARCHITECTURE.md): process boundaries, tenant isolation,
+  sessions, and the browser sandbox.
+- [tests/](tests): lease loss and retry exhaustion under a controlled clock,
+  tenant isolation, transaction boundaries, and capture with a real browser
+  against a local fixture server.
+- [CI](.github/workflows/ci.yml): locked dependencies, lint, types and tests on
+  Linux and Windows, PostgreSQL integration tests, image scans, and a Docker
+  smoke test that checks the firewall at socket level.
 
-Dynamic pages, anti-bot measures, authenticated pages and unstable selectors can
-still prevent capture. This is not a semantic understanding engine: the chosen
-region and comparison policy define what a change means. AI classification is
-optional and may be wrong. Unknown model pricing is reported as unknown.
+## Scope and limits
+
+- Delivery is at least once. If a mail provider accepts a message and the
+  process dies before recording it, the message can be sent twice.
+- The reference deployment is one Linux host with one API process. The queue
+  primitives are tested for concurrent claims, but a multi-replica deployment
+  has not been validated.
+- Pages behind anti-bot protection, pages that need a login, and unstable
+  selectors can fail to capture. A failed capture is reported and never stored
+  as a change.
+- The comparison works on structure, not meaning. The selector and the ignore
+  rules decide what counts as a change. The AI verdict can be wrong.
+- The visual selector picker needs a display and is disabled in the Compose
+  deployment. Typing a selector works everywhere.
+- Browser egress over IPv6 is disabled in the reference firewall.
+- Organizations, roles, invitations, TOTP and audited support access are
+  included. The Stripe billing module is present but disabled by default, and
+  monitoring does not need it.
+
+[Recovery](docs/RECOVERY.md) describes what to do with exhausted jobs and
+failed deliveries. [Security](SECURITY.md) lists the trust boundaries.
 
 ## Documentation
 
-- [Install and update](docs/INSTALL.md), [FAQ](docs/FAQ.md), [Deploy](docs/DEPLOY.md)
+- [Install and update](docs/INSTALL.md), [Deploy](docs/DEPLOY.md), [FAQ](docs/FAQ.md)
 - User guide: [English](docs/USER_GUIDE.en.md), [Polski](docs/USER_GUIDE.pl.md)
 - Administrator guide: [English](docs/ADMIN_GUIDE.en.md), [Polski](docs/ADMIN_GUIDE.pl.md)
-- [Backup, restore and recovery](docs/RECOVERY.md), [Contributing](CONTRIBUTING.md)
-- [Security and secret scanning](SECURITY.md), [documentation index](docs/README.md)
+- [Backup, restore and recovery](docs/RECOVERY.md)
+- [Contributing](CONTRIBUTING.md), [Security](SECURITY.md), [documentation index](docs/README.md)
 
 ## License
 
-[PolyForm Noncommercial 1.0.0](LICENSE) permits noncommercial use, modification
-and redistribution under its terms. Commercial use of Driftwatch is not granted;
-contact the copyright holder through [GitHub](https://github.com/mtpiotrowski1-pixel)
-to request separate written permission. Public source availability does not make
-this an OSI-approved open-source license.
+[PolyForm Noncommercial 1.0.0](LICENSE). You can use, modify and redistribute
+Driftwatch for noncommercial purposes. Commercial use needs written permission
+from the copyright holder; contact the author through
+[GitHub](https://github.com/mtpiotrowski1-pixel). This is a source-available
+license, not an OSI-approved open-source license.
 
-Dependencies, bundled fonts and attributed native patches retain their own
-licenses; see [third-party notices](THIRD_PARTY_NOTICES.md). The Docker API image
-also includes the exact source archive at `/driftwatch-source.tar.gz` for inspection.
+Dependencies, bundled fonts and the patched native libraries keep their own
+licenses, listed in [third-party notices](THIRD_PARTY_NOTICES.md). The API
+image serves the source it was built from at `/driftwatch-source.tar.gz`.

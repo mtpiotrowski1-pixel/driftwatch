@@ -69,10 +69,10 @@ uv pip compile pyproject.toml --extra dev --universal --python-version 3.12 --ge
 ```
 
 Keep `[build-system].requires` equal to `requirements-build.in`; builds use the
-locked backend without PEP 517 network isolation. Verify clean installs on both
-Windows/Linux, `pip-audit`, `npm audit`, actual behavior and Docker after changes.
-A successful resolver alone is insufficient. Image OS/browser advisories are a
-separate release gate from application package audits.
+locked backend without PEP 517 network isolation. After a dependency change, do
+a clean install on Windows and Linux, then run the test suite, `pip-audit`,
+`npm audit` and the Docker build. Image OS and browser advisories are gated
+separately from the application package audits.
 
 ## Changes and reviews
 

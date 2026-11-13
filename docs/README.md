@@ -3,7 +3,7 @@
 ## Start and use
 
 - [Installation and updates](INSTALL.md)
-- [FAQ / najczęstsze pytania](FAQ.md)
+- [FAQ](FAQ.md)
 - User guide: [English](USER_GUIDE.en.md), [Polski](USER_GUIDE.pl.md)
 - Administrator guide: [English](ADMIN_GUIDE.en.md), [Polski](ADMIN_GUIDE.pl.md)
 - [Deterministic demo](DEMO.md)
@@ -19,7 +19,3 @@
 - [Security and secret scanning](../SECURITY.md)
 - [Image advisories and scan interpretation](IMAGE_SECURITY.md)
 - [Contributing and reproducible checks](../CONTRIBUTING.md)
-
-Keep instructions aligned with implemented behavior. After changing capture,
-providers, authorization, schema or deployment topology, rerun the corresponding
-tests and update the affected guide.

@@ -1,19 +1,14 @@
 # Interface gallery
 
-These are actual browser views from an isolated local instance with synthetic
-organizations and data. Capture, AI and delivery adapters are scripted; the
-screenshots do not demonstrate a live paid provider or production deployment.
-The interface is Polish here and also provides English translations. Desktop
-views use 1440 CSS px; mobile views use 320–375 CSS px. Chrome was at 90%
-zoom; the manifest records CSS and exported bitmap dimensions separately. Only the capture canvas outside the
-viewport is trimmed; the interface is not retouched. [manifest.json](manifest.json)
-records image hashes, geometry, fonts and the build captured for each view.
+Screenshots of a local instance with synthetic organizations and data. Capture,
+AI and delivery were scripted, so no real provider was involved. The interface
+is shown in Polish; an English translation is included. Desktop views are
+1440 CSS px wide, mobile views 320 to 375 CSS px. [manifest.json](manifest.json)
+records the hash, geometry and source build of each image.
 
-All views use the final Emerald Portal branding generated with `image_gen` on
-2026-10-08. The [brand kit](../../brand-kit/README.pl.md) preserves the source
-images, concise generation provenance and optional export recipes. Decorative
-artwork stays behind actual HTML controls and text; it does not represent live
-monitoring results.
+The background artwork and illustrations were made with an AI image generator.
+The [brand kit](../../brand-kit/README.pl.md) keeps the source images and the
+export scripts.
 
 ## Sign in and public landing page
 
@@ -43,8 +38,7 @@ monitoring results.
 
 ![Empty recipients with responsive bitmap artwork](empty-recipients-desktop.jpg)
 
-The 320 px view below was separately checked with a classic desktop scrollbar.
-Content and document widths match; the manifest records the measured dimensions.
+The narrowest supported viewport is 320 px:
 
 ![Dashboard at a 320 px viewport](dashboard-320.jpg)
 

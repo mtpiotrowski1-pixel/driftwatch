@@ -40,7 +40,11 @@ Do not edit queue rows to claim success. A process crash leaves a lease that can
 expire and be reclaimed. Check attempts remain bounded even after repeated hard
 crashes. A dead check is visible to the instance operator; an audited redrive
 creates new work with a reason, ticket and idempotency key while retaining the
-original incident.
+original incident. A dead scheduled check also pauses scheduled checks of its
+site: the site's due window stays recorded until a redrive or a manual check
+succeeds, so a site that keeps failing does not produce a new dead job every
+retry cycle. A check cancelled because its site was disabled or its organization
+suspended does not pause scheduling once the site is enabled again.
 
 Analysis states distinguish `pending`, `processing`, `error`, `quota_blocked`
 from `succeeded`, `disabled`, `not_requested` and `skipped_no_delivery`.
@@ -70,12 +74,11 @@ successful send timestamp.
 
 ## Storage exhaustion
 
-Pause new work and preserve the failed-write logs. Expand/move storage without
-deleting the only database or backup. After storage is healthy, check database
-integrity and readiness, allow legitimate expired leases to recover, and rerun
-the affected verification. Tests that failed with disk-write errors provide no
-evidence about program correctness. Docker images, browser downloads, build
-caches, backups and WAL all consume space beyond the database itself.
+Pause new work and keep the logs of the failed writes. Expand or move storage
+without deleting the only database or backup. Once storage is healthy, check
+database integrity and readiness, then let expired leases recover. Docker
+images, browser downloads, build caches, backups and the WAL all take space in
+addition to the database itself.
 
 See [installation](INSTALL.md) and [deployment](DEPLOY.md). Measure recovery time
 and the recoverable data window on your own installation before relying on backups.

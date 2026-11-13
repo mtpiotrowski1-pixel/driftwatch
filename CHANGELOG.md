@@ -8,6 +8,39 @@ and this project adheres to
 
 ## [Unreleased]
 
+### Review fixes
+
+- Give each browser probe its own time limit, so an installed browser that hangs
+  on its first start falls through to the next candidate instead of using the
+  whole launch budget. Real-browser tests use Playwright's Chromium. Microsoft
+  Edge on the GitHub Ubuntu image caused the failing Linux CI job.
+- Reject every key and token published in `.env.example` as production key
+  material, including the capture worker token.
+- Leave the per-address login budget untouched by a successful login, and key
+  step-up throttling per account instead of per account and address.
+- Treat TOTP codes with non-ASCII digits as invalid instead of failing the request.
+- Escape page-derived text in Slack messages and disable Discord mentions.
+- Report Brevo network failures as delivery errors.
+- Send page content to the model inside a delimited block marked as untrusted
+  data, with a fixed input description that a custom base prompt cannot remove.
+  New analysis input hashes use serialization version 2.
+- Validate ignore selectors and bound display names when they are submitted.
+- Prune after a manual check with the retention saved in settings, stop the queue
+  and retry loops at the next item once maintenance starts, and skip suspended
+  organizations when selecting changes to retry.
+- Schedule a site again after its pending check was cancelled because the site
+  was disabled or its organization suspended.
+- Web app: SQLite restore reaches the file picker after re-authentication;
+  operator actions and user deletion report their outcome; a failed background
+  refresh keeps the loaded site and dashboard; Add site accepts an address
+  without a scheme; theme and language survive blocked site storage; activity
+  and attention counts use plural forms.
+- Remove unused code: a quota status helper, the unified text diff, a second
+  webhook sender, an optional-user dependency, an unreachable superadmin guard
+  and legacy interaction-step parsing.
+- Update certifi, dnspython, filelock, msgpack, soupsieve, uv and the frontend
+  lock to versions without known advisories.
+
 ### Public portfolio license
 
 - Publish the project under PolyForm Noncommercial 1.0.0. Allow noncommercial

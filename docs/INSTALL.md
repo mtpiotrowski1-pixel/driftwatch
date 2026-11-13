@@ -162,8 +162,8 @@ reversed safely. See [recovery](RECOVERY.md) and [deployment](DEPLOY.md).
   Configure that provider fully or deliberately select Log for local debugging.
 - Container healthy but capture unavailable: inspect `/healthz` dependencies and
   Operations; verify the worker token, firewall health and worker process.
-- Disk full / `Input/output error`: stop new checks, free or expand storage, then
-  rerun affected tests and recover leases. Failed writes do not establish correctness.
+- Disk full / `Input/output error`: pause new checks and free or expand storage.
+  Interrupted checks are picked up again once their leases expire.
 - Selector missing, HTTP error or anti-bot block: retain the old baseline, repair
   the selector/access policy, and run an owned check. Do not reset to the error page.
 - Browser cannot reach IPv6-only pages: the reference firewall currently permits

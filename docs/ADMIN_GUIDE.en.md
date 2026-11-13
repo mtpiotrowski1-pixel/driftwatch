@@ -24,7 +24,7 @@ alone. Examples are given in a form you can type in directly.
   a site grant does not grant access to unrelated sites or project administration.
 
 The rule: **the interface hides what a role cannot do, and the server blocks it
-anyway** — "reaching" a hidden button gets you nowhere.
+anyway**, so reaching a hidden button through the API does not help.
 
 ---
 
@@ -35,7 +35,7 @@ anyway** — "reaching" a hidden button gets you nowhere.
    A non-loopback runtime needs explicit one-time signup or a seeded account;
    see [first-account setup](INSTALL.md#first-account-and-registration).
 2. **Enable two-factor authentication** (Settings → Two-factor authentication).
-   It is the most important protection for the operator account — see section 8.
+   It is the most important protection for the operator account (section 8).
 3. If you serve multiple clients: in the **Organizations** panel create an
    organization and click **Manage** to "enter" it. Everything you then create
    (projects, sites, recipients, users) lands in that organization. The top
@@ -76,7 +76,7 @@ registration and self-service billing is rejected by configuration validation.
   - **URL** — the full address, e.g. `https://example.com/pricing`.
   - **Area to watch** — click "Open visual picker" to point at a page fragment
     with the mouse (instead of typing a CSS selector by hand). The visual picker
-    opens a real browser on the server — it works only when the server has a
+    opens a real browser on the server, so it works only when the server has a
     display (on plain Docker it will be unavailable; use the "Advanced" field
     instead).
   - **Record steps** — if the page needs a login or a banner dismissed, record
@@ -86,7 +86,7 @@ registration and self-service billing is rejected by configuration validation.
   - **Interval** — how often to check, in minutes (e.g. 60).
 - **Recipients** — the email addresses notifications go to. They are assigned
   to sites or projects. A recipient can have a **substitution** over a date
-  range (holiday) — mail goes to the stand-in during that time. In the
+  range (holiday), and mail goes to the stand-in during that time. In the
   substitution dialog the **"Applies to"** field can narrow it to one project
   or one site; by default it covers all of that recipient's notifications. A
   more specific substitution (site) takes precedence over a more general one
@@ -136,8 +136,8 @@ and footer elements.
 Below the AI settings there is a read-only **"What reaches the AI"** panel. It
 shows what the system strips from a page before analysis (navigation, scripts,
 footers…), which explicit technical attributes and ignored regions are removed, and
-which fields the model returns. Visible IDs, dates and numbers remain meaningful. Worth a look before you change the rules — you
-see exactly what they apply to.
+which fields the model returns. Visible IDs, dates and numbers remain meaningful. Check it before you change the rules:
+it shows exactly what they apply to.
 
 ---
 
@@ -149,7 +149,7 @@ language, recipients and webhook within their own workspace.
 
 | Option | What it is | Example |
 |---|---|---|
-| **Email provider** | How to send mail. | `auto` (picks by the credentials you provide), `smtp`, `brevo` or `log` (only writes to the log — for testing, nothing is sent). |
+| **Email provider** | How to send mail. | `auto` (picks by the credentials you provide), `smtp`, `brevo` or `log` (writes to the log only; for testing, nothing is sent). |
 | **Email language** | The language of notification and password-reset emails for this organization. | `English` or `Polski`; default = English. |
 | **From address** | The address mail is sent from. | `notifications@example.com` |
 | **From name** | The displayed sender name. | `Driftwatch` (empty = your brand name) |
@@ -164,7 +164,7 @@ language, recipients and webhook within their own workspace.
 | SMTP port | `587` |
 | SMTP security | `starttls` (port 587) or `ssl` (port 465) |
 | SMTP username | `notifications@example.com` |
-| SMTP password | an app password (Gmail requires an "app password", not the regular one) — stored encrypted |
+| SMTP password | an app password (Gmail requires an "app password", not the regular one); stored encrypted |
 
 **Brevo variant** (HTTP API, simpler than SMTP):
 
@@ -189,14 +189,14 @@ change can go to a webhook. In the "Webhook notifications" section paste the
 address (a Slack/Discord incoming webhook or your own endpoint), pick the
 format (`Generic JSON`, `Slack` or `Discord`) and click **"Send test webhook"**
 (save the settings first). The address is treated as a secret (encrypted,
-masked) and never lands in the logs. It must be public — internal/local
+masked) and never lands in the logs. It must be public; internal and local
 addresses are rejected.
 
 ---
 
 ## 6. Brand and appearance (branding)
 
-You can put your own brand on Driftwatch — a name, logo, accent colour and
+You can put your own brand on Driftwatch: a name, logo, accent colour and
 landing-page copy. Branding has **two layers**, exactly like the rest of the
 settings:
 
@@ -219,15 +219,15 @@ You set this in **Settings → Brand**.
 | **Hero background image** | instance | Upload a PNG or JPEG up to 8 MB; it is darkened so the text stays readable. |
 
 The landing fields (tagline, hero, background) are visible **only to the
-operator** — there is one landing page per instance. Everything is optional:
-empty fields give the polished default look. The colour must be valid hex;
+operator**, because there is one landing page per instance. Everything is optional:
+empty fields keep the default look. The colour must be valid hex;
 images are checked by their actual content, size, and dimensions. Remote image
 URLs and SVG are not rendered; bitmaps are kept in controlled same-origin
 storage.
 
 > **About the colour:** the accent is a single hex from which the whole palette
 > is derived. If you prefer a ready-made colour set over your own hex, use the
-> theme switcher in Settings — a custom branding accent takes precedence over
+> theme switcher in Settings. A custom branding accent takes precedence over
 > the theme.
 
 ---
@@ -235,18 +235,18 @@ storage.
 ## 7. Instance settings — better left alone
 
 These options (the "Capture and costs" section) are
-visible only to the operator and affect the whole instance. **The defaults are
-good — change them only deliberately.**
+visible only to the operator and affect the whole instance. **Change the defaults only
+for a specific reason.**
 
 | Option | Advice |
 |---|---|
 | **Timeout / settle time** | Leave them, unless a specific page loads slowly. |
-| **Min. interval / jitter** | Load guards for the shared engine. **Better left alone** — values too low can overload the browser. |
+| **Min. interval / jitter** | Load guards for the shared engine. **Better left alone**: values that are too low can overload the browser. |
 | **Snapshot retention** | How many snapshots to keep per site. The default is enough; raise it only if you need deeper history. |
 | **OpenAI prices (per 1M tokens)** | Used only for **cost estimates** in the panel. Update them if OpenAI changes its pricing; they do not affect behaviour. |
 
 In organization settings (when you "enter" an organization as the operator, or
-as an administrator) these instance-wide fields are hidden — you edit only what
+as an administrator) these instance-wide fields are hidden and you edit only what
 belongs to the organization. Every overridable field has a **"Restore
 default"** which clears the organization's value and restores inheritance from
 the instance settings.
@@ -348,7 +348,7 @@ the [deployment instructions](DEPLOY.md).
 
 **Worth adjusting:**
 - The OpenAI key and (possibly) the model.
-- Importance rules — for your use case.
+- Importance rules, to fit your use case.
 - Email details (provider, sender, SMTP/Brevo) and the email language.
 - The brand: name, logo and accent colour for your company; as the operator
   also the landing page content (tagline, hero, background).
@@ -356,8 +356,8 @@ the [deployment instructions](DEPLOY.md).
 - The check interval per site.
 
 **Better left alone (without a clear reason):**
-- The response format (base prompt) — it is tuned; if needed, "Restore default".
-- Capture min. interval / jitter — load guards.
+- The response format (base prompt). It is tuned; use "Restore default" if needed.
+- Capture min. interval and jitter, which protect the browser from overload.
 - `DRIFTWATCH_BASE_URL`; it is deployment-owned and not editable in the panel.
 
 **How to change things:** type a value into the field and click **Save

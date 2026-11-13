@@ -13,7 +13,7 @@ also be initialized with a seeded owner. See [installation](INSTALL.md).
 > sign-out live at the bottom of the menu, in the bottom-left corner (see section 2).
 
 What it does: Driftwatch watches the web pages you choose and emails you when
-something that matters changes (a price, a policy, an offer) — so you never have
+something that matters changes (a price, a policy, an offer), so you do not have
 to check them by hand.
 
 ---
@@ -52,11 +52,11 @@ Some menu items appear depending on your permissions:
    or choose an invited user's password.
 3. **Sign in** — click to enter.
 4. **Forgot your password?** — we'll email you a link to set a new one (the link is
-  valid for 30 minutes — see section 1a).
+  valid for 30 minutes; see section 1a).
 
 If two-factor authentication is on (a code from an app on your phone), after the
 password the app will also ask for a six-digit code (or one of your recovery codes).
-How to enable it — see section 8.
+Section 8 explains how to enable it.
 
 Administrators on an exposed deployment must enroll TOTP before accessing the
 product. The first owner can manage their home organization through their
@@ -84,8 +84,8 @@ After signing in, the **menu** on the left is what you use the whole time.
 5. **Notifications** — the history of sent messages.
 6. **Settings** — configuration and your account.
 
-Depending on your role, the menu may also show: **Access** — for an administrator
-(section 10) — and **Organizations** — for the operator (section 9).
+Depending on your role, the menu may also show **Access** for an administrator
+(section 10) and **Organizations** for the operator (section 9).
 
 **At the very bottom of the menu (bottom-left corner)** you'll find your profile
 (name and email), the **language switch** (English / Polski), and **Sign out**.
@@ -137,7 +137,7 @@ Projects group sites and give them shared rules. Click **Projects** in the menu.
 
 In a project you set shared **AI rules** (what counts as important) and the
 **notification mode** (every change / only significant), which every site inside
-inherits. Deleting a project keeps its sites — they simply stop inheriting its rules.
+inherits. Deleting a project keeps its sites; they only stop inheriting its rules.
 
 ---
 
@@ -154,8 +154,8 @@ where you see exactly what changed.
   **green** = new. Above it is a short AI summary (e.g. "Price dropped from 199 to
   149") and a verdict on whether the change is **significant**.
 
-On the left is the list of every detected change for this site — click any one to
-see its diff.
+On the left is the list of every detected change for this site. Click any of them
+to see its diff.
 
 **When something fails:** if a check or an email delivery fails, the change gets a
 red **Needs attention** badge. Open it and use **Retry** (resend the email) or
@@ -178,7 +178,7 @@ Recipients are the email addresses your alerts go to. Click **Recipients**.
   chosen dates: during that time their alerts go to a stand-in. You can limit a
   cover to a single project or a single site, or leave it on all notifications.
 
-Next to each recipient are also **edit** (rename, enable/disable — an inactive
+Next to each recipient are also **edit** (rename, enable/disable; an inactive
 recipient is skipped during delivery) and **delete** icons.
 
 ---
@@ -224,10 +224,10 @@ A few more useful things on this page:
 - **Branding** — set the **brand name**, **logo**, and **accent color** for your
   organization; your team sees them across the app, and a blank field inherits the
   instance default. If you are the operator, the same card also sets the **public
-  landing page** — its tagline, hero text, and background image that visitors see
+  landing page**: the tagline, hero text and background image that visitors see
   before signing in.
 - **Change password**, **two-factor authentication (2FA)** (see section 8a),
-  **AI usage** (costs — by month, site, and project), and the **"What reaches the
+  **AI usage** (costs by month, site and project), and the **"What reaches the
   AI"** panel (what the system strips from a page before analysis).
 
 A blank field usually means "use the default value".
@@ -237,8 +237,8 @@ A blank field usually means "use the default value".
 In the **Two-factor authentication** section, click **Enable two-factor
 authentication**, scan the QR code with an authenticator app (or enter the key by
 hand), type the generated code, and confirm with **Confirm and enable**. Save the
-**recovery codes** shown — each works once if your phone is unavailable; they won't
-be shown again.
+**recovery codes** shown. Each works once if your phone is unavailable, and they are
+not shown again.
 
 ---
 

@@ -38,7 +38,7 @@ The capture, AI and delivery adapters are deliberately scripted. The monitoring 
 
 The command checks these outcomes before reporting success. A contract failure exits with an error. JSON includes real persisted state after each stage, snapshot/event/history counts, scripted AI calls and accepted-delivery counts. It contains no timestamps or generated credentials, so successive runs produce the same report.
 
-The sample addresses use `example.invalid` and the watched URL uses `demo.invalid`. Provider IDs and summaries explicitly say `demo` or `scripted`; none is evidence of a real provider integration or a billed model call. The two quota reservations illustrate the application's accounting, while the scripted cost is zero.
+The sample addresses use `example.invalid` and the watched URL uses `demo.invalid`. Provider IDs and summaries are labelled `demo` or `scripted`. The two quota reservations show the application's accounting; the scripted cost is zero.
 
 With development dependencies installed (`.\install.ps1 -Dev` on Windows or
 `sh install.sh --dev` on Linux), inspect the real browser capture path separately.

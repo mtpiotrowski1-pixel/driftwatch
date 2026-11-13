@@ -9,15 +9,13 @@ project does not provide a response-time or support guarantee for hosted instanc
 
 Please **do not open a public issue** for security problems.
 
-When the repository has private vulnerability reporting enabled, use **GitHub
-security advisories** ("Security" tab → "Report a vulnerability"). If that option
-is unavailable, ask the maintainer for a private reporting channel without
-publishing exploit details or credentials. Include the affected revision,
-endpoint or component, reproduction steps and impact.
+Use GitHub's private vulnerability reporting ("Security" tab → "Report a
+vulnerability"). If it is not available, contact the maintainer through GitHub
+and ask for a private channel before sharing details. Include the affected
+revision, endpoint or component, reproduction steps and impact.
 
-Coordinated disclosure: give us a reasonable window to ship a fix before
-publishing details. Credit is given in the advisory unless you prefer
-otherwise.
+Please allow a reasonable window for a fix before publishing details. Credit is
+given in the advisory unless you prefer otherwise.
 
 ## Scope notes for operators
 
@@ -61,9 +59,10 @@ otherwise.
   rejects private, CGNAT, loopback and link-local/metadata connections and disables
   IPv6 egress. Docker's embedded DNS address is a narrowly documented exception.
   Other hosting platforms must provide the equivalent boundary. The API/scheduler
-  has a different trust domain and needs its own host egress policy. Private,
-  link-local, metadata, multicast and loopback networks stay denied except for
-  narrowly scoped database and capture-worker destination-and-port rules.
+  has a different trust domain and needs its own host egress policy, which the
+  reference Compose file does not provide. That policy should deny private,
+  link-local, metadata, multicast and loopback networks except for narrowly
+  scoped database and capture-worker destination-and-port rules.
 - Support access by the instance operator to another organization is locked by
   default on a public deployment. The first owner can administer their home
   organization through its server-verified administrator membership; this does
@@ -85,10 +84,9 @@ otherwise.
 - Stripe support is fail-closed and disabled by default. Provider setup, public
   registration, self-serve checkout, the legal gate, and live mode are separate
   switches. Checkout consent is bound to versioned HTTPS Terms/Privacy artifacts
-  and their SHA-256 digests. Enabling a flag is not evidence of legal, finance,
-  or security approval. Before live payments, complete the
-  [deployment verification](docs/DEPLOY.md#deployment-verification) and have the
-  deployment operator review the provider configuration.
+  and their SHA-256 digests. Before live payments, complete the
+  [deployment verification](docs/DEPLOY.md#deployment-verification) and review
+  the provider configuration.
 - Public health JSON exposes status, routing readiness and coarse dependency
   states; a capture outage may return HTTP 200 with `status=degraded`.
   Detailed database, scheduler, worker, queue, storage, and maintenance state is
@@ -96,33 +94,24 @@ otherwise.
   API.
 
 Hardening guidance for deployments is in [docs/DEPLOY.md](docs/DEPLOY.md).
-Native dependency fixes, transparent upstream backports and the exact meaning
-of the vulnerability gate are documented in [docs/IMAGE_SECURITY.md](docs/IMAGE_SECURITY.md).
-The gate includes vendor-unfixed HIGH/CRITICAL findings. A clean scanner result
-still depends on advisory coverage; complete inventory, embedded-library checks
-and actual browser tests are required for release evidence.
+[docs/IMAGE_SECURITY.md](docs/IMAGE_SECURITY.md) documents the native package
+locks, the two upstream backports and the image vulnerability gate, which also
+fails on HIGH and CRITICAL findings that the vendor has not fixed yet.
 
-## Preventing secret publication
+## Secret scanning
 
-Run `python scripts/secret_scan.py` before preparing an outgoing copy. It obtains
-Gitleaks 8.30.1 from the official release, verifies a committed SHA-256 checksum,
-scans all local Git refs and tracked/nonignored outgoing files, and reports only
-path, kind, line and commit. Shallow history fails rather than claiming a full
-scan. `--staged` is the pre-commit mode. An incomplete scan exits 2; findings exit
-1. CI fetches full history and runs both scopes. Optional `--report` evidence must
-be outside the repository. Do not paste raw provider tokens into issues.
+`python scripts/secret_scan.py` downloads Gitleaks 8.30.1 from its official
+release, verifies it against a committed SHA-256 checksum, and scans the Git
+history of all local refs together with every tracked or unignored file. A
+finding is reported as path, rule, line and commit; the secret value is never
+printed. The exit code is 1 for findings and 2 for an incomplete scan, for
+example on a shallow clone. `--staged` checks only staged changes and is the
+mode used by the pre-commit hook. CI runs the full scan with complete history.
 
-The allowlist pairs exact public test values with exact fixture paths. It does
-not skip all tests or a provider prefix. Inline `gitleaks:allow` markers are not
-accepted. A clean scan cannot prove the absence of every possible credential.
-Fingerprint `.gitleaksignore` files fail the gate; reviewed exceptions belong in
-the committed rule-specific TOML allowlist. Ambient Gitleaks configuration cannot
-override the scanner's policy.
-Review `.env`, runtime databases, backups, private working notes and all outgoing
-files as well; `.gitignore` does not untrack a previously committed file.
+Accepted test values are listed in `.gitleaks.toml` as exact value and path
+pairs. Inline `gitleaks:allow` markers and `.gitleaksignore` files are
+rejected, and an ambient Gitleaks configuration cannot override the policy.
 
-If a real key is found, stop publication, report its path/provider type privately
-and rotate it with the provider before repairing history. Removing the current
-line does not remove older Git objects. Do not rewrite shared history or revoke
-credentials without coordinating the owner. Follow [GitHub's sensitive-data
-removal guidance](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/removing-sensitive-data-from-a-repository).
+If a real credential was committed, rotate it with the provider first. Removing
+the line does not remove it from Git history; see [GitHub's guidance on removing
+sensitive data](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/removing-sensitive-data-from-a-repository).

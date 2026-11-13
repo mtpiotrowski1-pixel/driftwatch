@@ -7,10 +7,9 @@ and its limits are in [Monitoring semantics](MONITORING_SEMANTICS.md).
 ## Who becomes the administrator after downloading Driftwatch?
 
 The first successful registration on a fresh instance becomes its
-administrator/operator and administrator of the default organization.
-This applies to that installation's database; it has no connection to the
-author's instance. Later registration is closed by default. Invite more users
-after configuring email. The first owner can manage their own workspace without
+administrator/operator and administrator of the default organization. Every
+installation has its own database and its own first owner. Later registration
+is closed by default. Invite more users after configuring email. The first owner can manage their own workspace without
 a support grant; operator support access to another organization still requires
 the separate audited grant.
 
@@ -19,12 +18,10 @@ claim survives restarts and account deletion. An upgrade keeps existing users
 and roles. A non-loopback runtime must explicitly enable initial setup or seed
 an operator before it is exposed. See [installation](INSTALL.md#first-account-and-registration).
 
-## Do I need public signup, billing or a hosted service for a portfolio?
+## Do I need public signup or billing to use it?
 
-No. Publish the source repository with its tests, design decisions, screenshots
-and documentation. Run your own copy locally; monitoring works with AI disabled.
-Billing and ongoing public registration are optional and closed by default.
-Publishing the source does not expose your local instance.
+No. Both are optional and closed by default. A local instance with one account
+and AI disabled is a complete setup.
 
 ## Can I use Driftwatch commercially?
 
@@ -120,8 +117,7 @@ responses can incur provider charges without a stored usage row. Failed work
 still consumes its reserved quota. Use the provider's billing records for total
 spend; the dashboard is an estimate of recorded work.
 Estimates use standard uncached input/output rates and do not apply cache or
-batch discounts. The unused legacy cached-price field is no longer offered in
-settings; old stored values do not affect estimates.
+batch discounts.
 
 ## Can I explain an old AI verdict after settings change?
 
@@ -202,7 +198,7 @@ manual refresh. The last-success timestamp and stale-error state describe the
 view's freshness. Scheduler, queue and provider delays are separate; a polling
 interval does not guarantee capture or delivery completion within 15 seconds.
 
-## Why does a bulk retry no longer include successful URLs?
+## Why does a bulk retry skip URLs that were already created?
 
 Successfully created rows are removed from the retry input. Fix and retry the
 failed rows only. Different selectors on the same URL can be legitimate sites,
@@ -218,10 +214,9 @@ rename an older environment and run the installer again to create a fresh one.
 A supported upgrade removes only obsolete lxml after installing the current
 dependency lock. See [installation and updates](INSTALL.md).
 
-## What must stay out of a public Git repository?
+## Which files must never be committed in a fork?
 
-Keep runtime `.env`, database files, snapshots, logs, backups, API/provider keys,
-cookies, invite/reset links and encryption keys out of Git. Use the placeholder
-`.env.example`, synthetic demo data and the [security policy](../SECURITY.md).
-Secret scanning helps review the tree and history; exposed credentials must be
-revoked/rotated rather than only deleted from the latest file.
+The runtime `.env`, database files, snapshots, logs, backups and encryption
+keys. `.gitignore` covers the default locations. If a credential was committed,
+rotate it with the provider; deleting the line leaves it in Git history. See the
+[security policy](../SECURITY.md).
