@@ -150,6 +150,18 @@ docs/              guides, architecture and decision records
 [Recovery](docs/RECOVERY.md) describes what to do with exhausted jobs and
 failed deliveries. [Security](SECURITY.md) lists the trust boundaries.
 
+## How it was built
+
+Driftwatch was written with AI agents and skills that I built for my own
+workflow. My part was the product scope, the architecture decisions recorded
+in the [ADRs](docs/adr) and deciding when a change was done.
+
+A later review pass with Claude Code went through the whole repository. It
+found a CI failure that occurred only on GitHub's runners, tests that could not
+fail, and defects in authentication, the check queue and billing. Every fix has
+a regression test, and the important ones were confirmed to fail against the
+previous code. The [changelog](CHANGELOG.md) lists them.
+
 ## Documentation
 
 - [Install and update](docs/INSTALL.md), [Deploy](docs/DEPLOY.md), [FAQ](docs/FAQ.md)
