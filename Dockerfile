@@ -68,7 +68,9 @@ RUN pip install --no-deps /wheels/driftwatch-*.whl \
 
 # The sole privileged component owns packet filtering, not application data.
 FROM alpine:3.24@sha256:294b683cb724975bec92580e1e685676bd4b50bda910ddb8c51d4cabeaec77e6 AS capture-firewall
-RUN apk add --no-cache iptables zlib=1.3.2-r1
+# Alpine keeps only the newest revision of each package, so an exact pin breaks
+# the build at the next update. The floor keeps the CVE-2026-85091 fix.
+RUN apk add --no-cache iptables 'zlib>=1.3.2-r1'
 COPY scripts/capture_firewall.sh /usr/local/bin/capture-firewall
 RUN chmod 0555 /usr/local/bin/capture-firewall
 HEALTHCHECK --interval=5s --timeout=3s --start-period=5s --retries=3 \

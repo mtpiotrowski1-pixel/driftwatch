@@ -42,7 +42,7 @@ Source upgrades remove the obsolete lxml distribution only inside the checkout's
 
 Primary evidence includes [util-linux 2.42.4](https://github.com/util-linux/util-linux/blob/v2.42.4/Documentation/releases/v2.42.4-ReleaseNotes), [Expat 2.9.0](https://github.com/libexpat/libexpat/blob/R_2_9_0/expat/Changes), [systemd's advisory](https://github.com/systemd/systemd/security/advisories/GHSA-jm29-p7hh-vjhv) and [libxml2 2.15.4](https://gitlab.gnome.org/GNOME/libxml2/-/blob/v2.15.4/NEWS).
 
-Full reports also identified two MEDIUM advisories beyond that HIGH/CRITICAL baseline. Runtime and development locks now use Mako 1.4.3, above the [upstream 1.4.2 fix](https://github.com/sqlalchemy/mako/security/advisories/GHSA-5639-2j2p-m4mx) for CVE-2026-102991. The firewall installs signed Alpine `zlib=1.3.2-r1`, the [vendor security-database fix](https://secdb.alpinelinux.org/v3.24/main.json) for CVE-2026-85091. These remain visible to normal scanners, without exceptions.
+Full reports also identified two MEDIUM advisories beyond that HIGH/CRITICAL baseline. Runtime and development locks now use Mako 1.4.3, above the [upstream 1.4.2 fix](https://github.com/sqlalchemy/mako/security/advisories/GHSA-5639-2j2p-m4mx) for CVE-2026-102991. The firewall installs signed Alpine `zlib>=1.3.2-r1`, at least the [vendor security-database fix](https://secdb.alpinelinux.org/v3.24/main.json) for CVE-2026-85091. These remain visible to normal scanners, without exceptions.
 
 ## Two transparent upstream backports
 
