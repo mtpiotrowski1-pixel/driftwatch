@@ -1,4 +1,4 @@
-"""Tests for the admin log and backup endpoints."""
+"""Instance backup and restore endpoints."""
 
 from __future__ import annotations
 
@@ -87,10 +87,20 @@ async def test_restore_rejects_non_sqlite(admin_client: httpx.AsyncClient) -> No
     assert response.status_code == 400
 
 
-async def test_backup_then_restore_round_trips(admin_client: httpx.AsyncClient) -> None:
-    await admin_client.post("/api/auth/step-up", json={"password": "supersecret123"})
+async def test_restore_replaces_live_data_with_the_backup(admin_client: httpx.AsyncClient) -> None:
+    created = await admin_client.post("/api/projects", json={"name": "Before backup"})
+    assert created.status_code == 201, created.text
+    project_id = created.json()["id"]
+    assert (
+        await admin_client.post("/api/auth/step-up", json={"password": "supersecret123"})
+    ).status_code == 204
     backup = await admin_client.get("/api/admin/backup")
     assert backup.status_code == 200
+
+    renamed = await admin_client.patch(f"/api/projects/{project_id}", json={"name": "Renamed"})
+    assert renamed.status_code == 200, renamed.text
+    later = await admin_client.post("/api/projects", json={"name": "After backup"})
+    assert later.status_code == 201, later.text
 
     restore = await admin_client.post(
         "/api/admin/restore",
@@ -100,14 +110,15 @@ async def test_backup_then_restore_round_trips(admin_client: httpx.AsyncClient) 
     assert restore.status_code == 200
     assert restore.json()["safety_copy"].endswith(".db")
 
-    # Even an identical snapshot receives fresh auth generations. A cookie from
-    # either timeline must not survive the restore.
+    # Restore rotates every session generation, so the old cookie is rejected.
     assert (await admin_client.get("/api/auth/me")).status_code == 401
     login = await admin_client.post(
         "/api/auth/login",
         json={"email": "admin@example.com", "password": "supersecret123"},
     )
     assert login.status_code == 200
+    projects = (await admin_client.get("/api/projects")).json()
+    assert [project["name"] for project in projects] == ["Before backup"]
 
 
 async def test_unauthenticated_restore_does_not_read_request_body(

@@ -20,6 +20,10 @@ async def test_secret_is_encrypted_at_rest_and_masked_in_public(database: Databa
         await session.commit()
 
     async with database.session() as session:
+        row = await session.get(Setting, "openai_api_key")
+        assert row is not None
+        assert "sk-secret" not in row.value
+        assert box.decrypt(row.value) == "sk-secret"
         store = SettingsStore(session, box)
         assert await store.get("openai_api_key") == "sk-secret"
         public = await store.public_values()

@@ -5,6 +5,7 @@ from __future__ import annotations
 from datetime import UTC, datetime, timedelta
 
 import pytest
+from sqlalchemy import select
 
 from driftwatch.db import Database
 from driftwatch.enums import AnalysisStatus, NotificationMode
@@ -173,17 +174,28 @@ async def test_prune_site_history_keeps_recent_snapshots(database: Database) -> 
                 change.analysis_status = AnalysisStatus.NOT_REQUESTED
         await session.commit()
 
+    snapshots = select(Snapshot.id).where(Snapshot.site_id == site_id).order_by(Snapshot.id)
     async with database.session() as session:
+        before = (await session.scalars(snapshots)).all()
         removed = await prune_site_history(session, site_id, keep=2)
         await session.commit()
 
-    assert removed >= 1
     async with database.session() as session:
-        remaining = (
-            await session.execute(Snapshot.__table__.select().where(Snapshot.site_id == site_id))
+        after = (await session.scalars(snapshots)).all()
+        changes = (
+            await session.scalars(select(ChangeEvent).where(ChangeEvent.site_id == site_id))
         ).all()
-    # The two most recent snapshots survive, plus any still referenced by a kept change.
-    assert 2 <= len(remaining) <= 3
+
+    # The two newest snapshots are kept together with every change that ends at
+    # one of them. The older side of those changes stays so each diff can still
+    # be rebuilt, which keeps the third-newest snapshot too.
+    assert len(before) == 6
+    assert after == before[-3:]
+    assert removed == 3
+    assert sorted((change.old_snapshot_id, change.new_snapshot_id) for change in changes) == [
+        (before[-3], before[-2]),
+        (before[-2], before[-1]),
+    ]
 
 
 async def test_prune_ai_usage_drops_only_old_rows(database: Database) -> None:

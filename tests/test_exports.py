@@ -1,13 +1,22 @@
-"""XLSX export: localized headers and values, and the ``lang`` query param."""
+"""XLSX export of changes: localized headers and values, formula neutralization."""
 
 from __future__ import annotations
 
 import io
 
 import httpx
+import pytest
 from openpyxl import load_workbook
 
-from driftwatch.api.exports import _significance
+from tests.conftest import ScriptedCapturer, StubAnalyzer
+
+_V1 = "<main><p>Basic plan costs 10 USD per month</p></main>"
+_V2 = "<main><p>Basic plan costs 12 USD per month</p></main>"
+
+
+@pytest.fixture
+def analyzer() -> StubAnalyzer:
+    return StubAnalyzer(headline='=HYPERLINK("https://attacker.example")', summary="@SUM(A1)")
 
 
 async def _sheet(client: httpx.AsyncClient, url: str) -> tuple[str, list[str]]:
@@ -57,8 +66,41 @@ async def test_export_unknown_language_falls_back_to_english(
     assert title == "Changes"
 
 
-def test_significance_values_are_localized() -> None:
-    assert _significance(None, "pl") == "oczekuje"
-    assert _significance(True, "pl") == "tak"
-    assert _significance(False, "pl") == "nie"
-    assert _significance(None, "en") == "pending"
+async def _export_one_change(client: httpx.AsyncClient, capturer: ScriptedCapturer) -> None:
+    capturer.queue.extend([_V1, _V2])
+    recipient = await client.post("/api/recipients", json={"email": "ops@example.com"})
+    assert recipient.status_code == 201, recipient.text
+    site = await client.post(
+        "/api/sites",
+        json={
+            "url": "https://example.test/pricing",
+            "name": "+cmd|' /C calc'!A0",
+            "recipient_ids": [recipient.json()["id"]],
+        },
+    )
+    assert site.status_code == 201, site.text
+    for expected in ("baseline", "changed"):
+        check = await client.post(f"/api/sites/{site.json()['id']}/check")
+        assert check.json()["status"] == expected
+
+
+@pytest.mark.parametrize(("language", "significant"), [("en", "yes"), ("pl", "tak")])
+async def test_export_rows_are_localized_and_cannot_become_formulas(
+    admin_client: httpx.AsyncClient, capturer: ScriptedCapturer, language: str, significant: str
+) -> None:
+    await _export_one_change(admin_client, capturer)
+
+    response = await admin_client.get(f"/api/exports/changes.xlsx?lang={language}")
+    assert response.status_code == 200, response.text
+    sheet = load_workbook(io.BytesIO(response.content)).active
+    assert sheet is not None
+    rows = list(sheet.iter_rows(min_row=2, values_only=True))
+
+    assert len(rows) == 1
+    _, site_name, url, _, significance, headline, summary, _ = rows[0]
+    assert site_name == "'+cmd|' /C calc'!A0"
+    assert url == "https://example.test/pricing"
+    assert significance == significant
+    assert headline == '\'=HYPERLINK("https://attacker.example")'
+    assert summary == "'@SUM(A1)"
+    assert all(cell.data_type != "f" for cell in sheet[2])

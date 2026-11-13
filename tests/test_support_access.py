@@ -34,6 +34,7 @@ from driftwatch.models import (
     SiteCheckJob,
     Snapshot,
     SupportAccessGrant,
+    User,
 )
 from driftwatch.monitoring.analyzer import Analysis
 from driftwatch.monitoring.pipeline import CheckStatus
@@ -45,7 +46,7 @@ from tests.conftest import FakePicker, RecordingChannel, ScriptedCapturer, StubA
 
 _OPERATOR_EMAIL = "operator@example.com"
 _OPERATOR_PASSWORD = "public-operator-password"
-_TEST_SESSION_GENERATION = "2f8d2a36-9de4-4b61-9f0e-0b5fe35b19cf"
+_SESSION_SECRET = "session-key-for-public-support-tests-0123456789"
 
 
 @dataclass(frozen=True, slots=True)
@@ -65,7 +66,7 @@ async def public_operator_session(tmp_path: Path) -> AsyncIterator[PublicOperato
         database_url=f"sqlite+aiosqlite:///{tmp_path}/support.db",
         base_url="https://driftwatch.example.test",
         host="0.0.0.0",
-        session_secret_key="session-key-for-public-support-tests-0123456789",
+        session_secret_key=_SESSION_SECRET,
         encryption_key="encryption-key-for-public-support-tests-012345",
         initial_admin_email=_OPERATOR_EMAIL,
         initial_admin_password=_OPERATOR_PASSWORD,
@@ -144,6 +145,41 @@ async def _step_up(
         },
     )
     assert response.status_code == 204, response.text
+
+
+async def _support_token(
+    session: PublicOperatorSession,
+    organization_id: int,
+    *,
+    ttl_seconds: int = 60,
+    token_version_offset: int = 0,
+) -> str:
+    """A support cookie matching the active grant, except for the requested change."""
+    async with session.database.session() as database_session:
+        operator = await database_session.get(User, session.user_id)
+        grant_event_id = await database_session.scalar(
+            select(SupportAccessGrant.grant_event_id).where(
+                SupportAccessGrant.organization_id == organization_id,
+                SupportAccessGrant.revoked_at.is_(None),
+            )
+        )
+    assert operator is not None
+    assert grant_event_id is not None
+    return issue_support_access_token(
+        operator.id,
+        organization_id=organization_id,
+        grant_event_id=grant_event_id,
+        secret=_SESSION_SECRET,
+        ttl_seconds=ttl_seconds,
+        token_version=operator.token_version + token_version_offset,
+        session_generation=operator.session_generation,
+    )
+
+
+def _use_support_cookie(client: httpx.AsyncClient, token: str) -> None:
+    client.cookies.set(
+        "driftwatch_support_access", token, domain="driftwatch.example.test", path="/api"
+    )
 
 
 async def _grant(session: PublicOperatorSession, organization_id: int) -> dict[str, object]:
@@ -554,20 +590,14 @@ async def test_revocation_and_token_version_invalidate_write_access(
         assert grant.revoked_at is not None
 
     await _grant(operator, organization_id)
-    wrong_version = issue_support_access_token(
-        operator.user_id,
-        organization_id=organization_id,
-        grant_event_id=1,
-        secret="session-key-for-public-support-tests-0123456789",
-        ttl_seconds=60,
-        token_version=999,
-        session_generation=_TEST_SESSION_GENERATION,
+    _use_support_cookie(client, await _support_token(operator, organization_id))
+    accepted = await client.post(
+        "/api/sites", headers=headers, json={"url": "https://accepted.example.test"}
     )
-    client.cookies.set(
-        "driftwatch_support_access",
-        wrong_version,
-        domain="driftwatch.example.test",
-        path="/api",
+    assert accepted.status_code == 201, accepted.text
+
+    _use_support_cookie(
+        client, await _support_token(operator, organization_id, token_version_offset=1)
     )
     invalidated = await client.post(
         "/api/sites",
@@ -577,36 +607,41 @@ async def test_revocation_and_token_version_invalidate_write_access(
     assert invalidated.status_code == 403
 
 
-async def test_expired_or_malformed_grants_and_blank_reasons_are_rejected(
+async def test_blank_support_reason_is_rejected(
     public_operator_session: PublicOperatorSession,
+) -> None:
+    operator = public_operator_session
+    organization_id = await _create_organization(operator, "Blank reason customer")
+    await _step_up(operator, organization_id)
+
+    blank = await operator.client.post(
+        "/api/support-access",
+        headers={"X-Acting-Org": str(organization_id)},
+        json={"reason": "              "},
+    )
+
+    assert blank.status_code == 422
+
+
+@pytest.mark.parametrize("cookie", ["expired", "malformed"])
+async def test_expired_or_malformed_support_cookie_is_rejected(
+    public_operator_session: PublicOperatorSession, cookie: str
 ) -> None:
     operator = public_operator_session
     client = operator.client
     organization_id = await _create_organization(operator, "Expired customer")
     headers = {"X-Acting-Org": str(organization_id)}
-    await _step_up(operator, organization_id)
+    await _grant(operator, organization_id)
+    _use_support_cookie(client, await _support_token(operator, organization_id))
+    accepted = await client.post(
+        "/api/sites", headers=headers, json={"url": "https://accepted.example.test"}
+    )
+    assert accepted.status_code == 201, accepted.text
 
-    blank = await client.post(
-        "/api/support-access",
-        headers=headers,
-        json={"reason": "              "},
-    )
-    assert blank.status_code == 422
-
-    expired = issue_support_access_token(
-        operator.user_id,
-        organization_id=organization_id,
-        grant_event_id=1,
-        secret="session-key-for-public-support-tests-0123456789",
-        ttl_seconds=-1,
-        session_generation=_TEST_SESSION_GENERATION,
-    )
-    client.cookies.set(
-        "driftwatch_support_access",
-        expired,
-        domain="driftwatch.example.test",
-        path="/api",
-    )
+    if cookie == "expired":
+        _use_support_cookie(client, await _support_token(operator, organization_id, ttl_seconds=-1))
+    else:
+        _use_support_cookie(client, "not-a-signed-token")
     denied = await client.post(
         "/api/sites",
         headers=headers,

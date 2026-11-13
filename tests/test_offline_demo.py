@@ -10,6 +10,7 @@ from pathlib import Path
 
 import pytest
 
+from driftwatch.config import Settings
 from driftwatch.demo import DemoNetworkAttempt, _deny_network, main, run_demo
 
 
@@ -35,18 +36,25 @@ async def test_demo_recovers_partial_delivery_without_reanalysis_or_duplicate_ac
     assert report.accepted_deliveries == {"first@example.invalid": 2, "retry@example.invalid": 2}
 
 
-async def test_demo_ignores_real_env_and_dotenv_and_is_repeatable(
-    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+@pytest.mark.parametrize("source", ["environment", "dotenv"])
+async def test_demo_ignores_application_configuration_and_is_repeatable(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path, source: str
 ) -> None:
-    real_database = tmp_path / "real.db"
-    production_url = f"sqlite+aiosqlite:///{real_database.as_posix()}"
-    monkeypatch.setenv("DRIFTWATCH_DATABASE_URL", production_url)
-    monkeypatch.setenv("DRIFTWATCH_OPENAI_API_KEY", "synthetic-unusable-key")
+    # A worker token without a URL fails Settings validation, so the demo would
+    # crash if it read either source.
+    unpaired = "DRIFTWATCH_CAPTURE_WORKER_TOKEN"
     monkeypatch.chdir(tmp_path)
-    (tmp_path / ".env").write_text(f"DRIFTWATCH_DATABASE_URL={production_url}\n", encoding="utf-8")
+    monkeypatch.setitem(Settings.model_config, "env_file", ".env")
+    if source == "environment":
+        monkeypatch.setenv(unpaired, "unpaired-token")
+    else:
+        (tmp_path / ".env").write_text(f"{unpaired}=unpaired-token\n", encoding="utf-8")
+    with pytest.raises(ValueError, match="must be configured together"):
+        Settings()
+
     first, second = await run_demo(), await run_demo()
+
     assert asdict(first) == asdict(second)
-    assert not real_database.exists()
 
 
 async def test_demo_denies_dns_and_async_network_connections() -> None:

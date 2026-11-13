@@ -110,8 +110,11 @@ async def test_scheduler_pause_waits_for_active_tick_and_blocks_new_tick(
     )
     tick_entered = asyncio.Event()
     finish_tick = asyncio.Event()
+    ticks_run = 0
 
     async def slow_tick(_self: MonitorScheduler) -> None:
+        nonlocal ticks_run
+        ticks_run += 1
         tick_entered.set()
         await finish_tick.wait()
 
@@ -137,7 +140,9 @@ async def test_scheduler_pause_waits_for_active_tick_and_blocks_new_tick(
 
     blocked_tick = asyncio.create_task(scheduler.tick())
     await asyncio.wait_for(blocked_tick, timeout=1)
-    assert tick_entered.is_set()
+    assert ticks_run == 1
 
     release_maintenance.set()
     await maintenance
+    await asyncio.wait_for(scheduler.tick(), timeout=1)
+    assert ticks_run == 2

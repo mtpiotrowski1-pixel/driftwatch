@@ -3,6 +3,7 @@ from __future__ import annotations
 import hashlib
 import hmac
 import json
+from collections.abc import Callable
 from datetime import UTC, datetime, timedelta
 from urllib.parse import parse_qs
 
@@ -288,6 +289,88 @@ async def test_signed_basil_subscription_uses_conservative_item_period() -> None
         created + 29 * 86_400,
         tz=UTC,
     )
+
+
+_WEBHOOK_SECRET = "whsec_realistic_signed_payload"
+_WEBHOOK_CREATED = 1_767_225_600
+
+
+def _tamper_body(raw: bytes, headers: dict[str, str]) -> tuple[bytes, dict[str, str], int]:
+    return raw.replace(b"evt_signature", b"evt_signaturf"), headers, _WEBHOOK_CREATED
+
+
+def _wrong_secret(raw: bytes, headers: dict[str, str]) -> tuple[bytes, dict[str, str], int]:
+    payload = json.loads(raw)
+    raw, headers = _signed_stripe_payload(
+        payload, secret="whsec_another_endpoint", timestamp=_WEBHOOK_CREATED
+    )
+    return raw, headers, _WEBHOOK_CREATED
+
+
+def _received_late(raw: bytes, headers: dict[str, str]) -> tuple[bytes, dict[str, str], int]:
+    return raw, headers, _WEBHOOK_CREATED + 301
+
+
+def _received_early(raw: bytes, headers: dict[str, str]) -> tuple[bytes, dict[str, str], int]:
+    return raw, headers, _WEBHOOK_CREATED - 301
+
+
+def _without_v1(raw: bytes, headers: dict[str, str]) -> tuple[bytes, dict[str, str], int]:
+    return raw, {"stripe-signature": f"t={_WEBHOOK_CREATED}"}, _WEBHOOK_CREATED
+
+
+def _without_timestamp(raw: bytes, headers: dict[str, str]) -> tuple[bytes, dict[str, str], int]:
+    signature = headers["stripe-signature"].split(",")[1]
+    return raw, {"stripe-signature": signature}, _WEBHOOK_CREATED
+
+
+def _without_header(raw: bytes, headers: dict[str, str]) -> tuple[bytes, dict[str, str], int]:
+    return raw, {}, _WEBHOOK_CREATED
+
+
+@pytest.mark.parametrize(
+    "tamper",
+    [
+        _tamper_body,
+        _wrong_secret,
+        _received_late,
+        _received_early,
+        _without_v1,
+        _without_timestamp,
+        _without_header,
+    ],
+    ids=lambda tamper: tamper.__name__.lstrip("_"),
+)
+async def test_webhook_signature_rejects_tampering(
+    tamper: Callable[[bytes, dict[str, str]], tuple[bytes, dict[str, str], int]],
+) -> None:
+    payload: dict[str, object] = {
+        "id": "evt_signature",
+        "api_version": _STRIPE_API_VERSION,
+        "created": _WEBHOOK_CREATED,
+        "livemode": False,
+        "type": "unsupported.event",
+        "data": {"object": {"id": "unsupported"}},
+    }
+    raw, headers = _signed_stripe_payload(
+        payload, secret=_WEBHOOK_SECRET, timestamp=_WEBHOOK_CREATED
+    )
+    provider = StripeBillingProvider(
+        api_key="sk_test_1234567890",
+        webhook_secret=_WEBHOOK_SECRET,
+        api_version=_STRIPE_API_VERSION,
+    )
+    try:
+        accepted = provider.verify_webhook(
+            raw, headers, now=datetime.fromtimestamp(_WEBHOOK_CREATED, tz=UTC)
+        )
+        assert accepted.event_id == "evt_signature"
+
+        raw, headers, received = tamper(raw, headers)
+        with pytest.raises(WebhookVerificationError, match="verification failed"):
+            provider.verify_webhook(raw, headers, now=datetime.fromtimestamp(received, tz=UTC))
+    finally:
+        await provider.aclose()
 
 
 @pytest.mark.asyncio

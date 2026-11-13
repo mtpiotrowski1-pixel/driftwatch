@@ -7,10 +7,6 @@ fixture has already registered ``admin@example.com`` as the instance superadmin
 in the default org *before* these rows exist, so the seeded admins are plain
 org-admins. Identity is switched over the shared cookie jar with ``POST
 /api/auth/login``.
-
-Where an assertion fails because of a genuine backend scoping leak (not a test
-bug), the test is marked ``xfail(strict=False)`` with a precise ``LEAK:`` reason
-naming the endpoint and source file, per the task brief — src/ is never touched.
 """
 
 from __future__ import annotations
@@ -384,32 +380,26 @@ async def test_admin_cannot_grant_permissions_on_other_orgs_resources(
 
 
 # ---------------------------------------------------------------------------
-# Superadmin-only operator endpoints (backup, logs).
+# Database backup is a superadmin operation.
 # ---------------------------------------------------------------------------
 
 
-async def test_backup_and_logs_are_superadmin_only(
+async def test_org_admin_cannot_download_a_backup(
     client: httpx.AsyncClient, tenants: TwoTenants
 ) -> None:
-    # An org-admin (not a superadmin) is forbidden.
     await _login(client, tenants.a.admin_email)
     assert (await client.get("/api/admin/backup")).status_code == 403
-    assert (await client.get("/api/logs")).status_code == 404
 
 
-async def test_superadmin_can_use_operator_endpoints(
+async def test_superadmin_downloads_a_backup_after_step_up(
     admin_client: httpx.AsyncClient, tenants: TwoTenants
 ) -> None:
-    # admin_client is the instance superadmin (admin@example.com). The backup is
-    # gated behind a fresh re-authentication (step-up).
     assert (await admin_client.get("/api/admin/backup")).status_code == 428
     step_up = await admin_client.post("/api/auth/step-up", json={"password": "supersecret123"})
     assert step_up.status_code == 204
     backup = await admin_client.get("/api/admin/backup")
     assert backup.status_code == 200
     assert backup.content[:15] == b"SQLite format 3"
-    # The log file may not exist yet, so accept the file (200) or "no log yet" (404).
-    assert (await admin_client.get("/api/logs")).status_code == 404
 
 
 # ---------------------------------------------------------------------------
