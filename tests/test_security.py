@@ -192,4 +192,31 @@ def test_secret_box_reads_and_versions_legacy_fernet_ciphertext() -> None:
 
     assert box.decrypt(legacy) == "secret"
     rotated = box.rotate(legacy)
-    assert rotated is not None and rotated.startswith("dw1:")
+    assert rotated is not None and rotated.startswith("dw2:")
+
+
+def _dw1_ciphertext(key: str, plaintext: str) -> str:
+    digest = hashlib.sha256(key.encode()).digest()
+    token = Fernet(base64.urlsafe_b64encode(digest)).encrypt(plaintext.encode()).decode()
+    return f"dw1:{digest.hex()[:16]}:{token}"
+
+
+def test_secret_box_key_id_shares_no_bytes_with_the_key() -> None:
+    key = "application-secret-key"
+    key_id = SecretBox(key).encrypt("secret").split(":")[1]
+
+    assert len(key_id) == 16
+    assert key_id not in hashlib.sha256(key.encode()).hexdigest()
+
+
+@pytest.mark.parametrize("ring", [("old-key",), ("new-key", "old-key")])
+def test_secret_box_reads_dw1_ciphertext_and_rotates_it_to_dw2(ring: tuple[str, ...]) -> None:
+    box = SecretBox(*ring)
+    ciphertext = _dw1_ciphertext("old-key", "secret")
+
+    assert box.decrypt(ciphertext) == "secret"
+    rotated = box.rotate(ciphertext)
+    assert rotated is not None and rotated.startswith("dw2:")
+    assert SecretBox(ring[0]).decrypt(rotated) == "secret"
+    assert box.rotate(rotated) == rotated
+    assert SecretBox("unrelated-key").decrypt(ciphertext) is None

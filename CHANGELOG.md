@@ -60,6 +60,10 @@ and this project adheres to
 - Keep a checkout request working when a concurrent request with the same
   idempotency key inserts its attempt first. The full rollback expired the
   objects the request had loaded, and the next read failed with a server error.
+- Derive the key id stored with each encrypted setting from a labelled hash.
+  The previous id was the first eight bytes of the Fernet signing key. Existing
+  `dw1` values stay readable and are rewritten as `dw2` when read; an earlier
+  build cannot read `dw2`, so a downgrade needs the pre-upgrade backup.
 
 ### Public portfolio license
 
