@@ -54,6 +54,9 @@ and this project adheres to
 - Close a manual check whose capture failed instead of retrying it in the
   background. Each retry extended the site's failure streak, so one click
   could end in a "site appears down" alert.
+- Check the OpenAI key and price overrides before reserving an AI check. A
+  configuration error used up one reservation on every retry, until the
+  monthly limit hid the actual cause.
 
 ### Public portfolio license
 

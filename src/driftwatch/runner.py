@@ -265,21 +265,14 @@ class SiteRunner:
             system_prompt = build_system_prompt(
                 ResolvedRules("draft", rules_text.strip()), base_prompt=await store.base_prompt()
             )
-            openai_config = await store.openai(
-                default_model=self._settings.openai_model, env_key=self._settings.openai_api_key
-            )
-            analyzer = self._analyzer_override or OpenAIChangeAnalyzer(
-                openai_config.api_key,
-                max_diff_chars=self._settings.max_diff_chars_for_ai,
-                price_override=await _price_override(store, openai_config.model),
-            )
+            analyzer, model = await self._analyzer(store)
             await reserve_ai_check(session, site.organization_id)
             await session.commit()
             prepared = prepare_input(
                 diff_text=change.diff_text,
                 url=site.url,
                 system_prompt=system_prompt,
-                model=openai_config.model,
+                model=model,
                 max_chars=self._settings.max_diff_chars_for_ai,
             )
             async with asyncio.timeout(ANALYSIS_TIMEOUT_SECONDS):
@@ -287,7 +280,7 @@ class SiteRunner:
                     diff_text=prepared.diff_text,
                     url=site.url,
                     system_prompt=system_prompt,
-                    model=openai_config.model,
+                    model=model,
                 )
             session.add(
                 AIUsage(
@@ -324,6 +317,20 @@ class SiteRunner:
             result.ai_error = "Analysis already in progress or completed"
             return False
         await session.refresh(change)
+        rules = resolve_importance_rules(
+            site_prompt=site.prompt,
+            project_prompt=project.prompt if project else None,
+            global_rules=await store.importance_rules(),
+        )
+        system_prompt = build_system_prompt(rules, base_prompt=await store.base_prompt())
+        # A configuration error is found before the quota is reserved: no
+        # provider is contacted, and the retry loop must not spend a slot on
+        # each attempt until the plan's monthly limit is gone.
+        try:
+            analyzer, model = await self._analyzer(store)
+        except AnalysisError as exc:
+            await self._defer_analysis(session, site, change, token, result, str(exc))
+            return False
         try:
             await reserve_ai_check(session, site.organization_id)
         except PlanLimitReached:
@@ -346,25 +353,11 @@ class SiteRunner:
             result.ai_error = error
             return False
 
-        rules = resolve_importance_rules(
-            site_prompt=site.prompt,
-            project_prompt=project.prompt if project else None,
-            global_rules=await store.importance_rules(),
-        )
-        system_prompt = build_system_prompt(rules, base_prompt=await store.base_prompt())
-        openai_config = await store.openai(
-            default_model=self._settings.openai_model, env_key=self._settings.openai_api_key
-        )
         # Commit the atomic reservation before the external side effect. The
         # retry marker makes a process crash during the call recoverable instead
         # of leaving a silent, permanently unanalyzed change.
         await session.commit()
         try:
-            analyzer = self._analyzer_override or OpenAIChangeAnalyzer(
-                openai_config.api_key,
-                max_diff_chars=self._settings.max_diff_chars_for_ai,
-                price_override=await _price_override(store, openai_config.model),
-            )
             async with asyncio.timeout(ANALYSIS_TIMEOUT_SECONDS):
                 analysis = await analyze_change(
                     session,
@@ -372,7 +365,7 @@ class SiteRunner:
                     site,
                     analyzer=analyzer,
                     system_prompt=system_prompt,
-                    model=openai_config.model,
+                    model=model,
                     lease_token=token,
                     rules_source=rules.source,
                     max_diff_chars=self._settings.max_diff_chars_for_ai,
@@ -382,23 +375,50 @@ class SiteRunner:
             return False
         except (AnalysisError, TimeoutError) as exc:
             error = str(exc) if isinstance(exc, AnalysisError) else "AI analysis timed out"
-            logger.info("analysis deferred for site %s: %s", site.id, exc)
-            if await release_analysis(
-                session,
-                change.id,
-                token,
-                now=datetime.now(UTC),
-                status=AnalysisStatus.ERROR,
-                error=error,
-            ):
-                await session.refresh(change)
-                record_analysis_failure(change, error)
-            result.ai_error = error
+            await self._defer_analysis(session, site, change, token, result, error)
             return False
         change.next_retry_at = None
         change.retry_status = None
         result.significant = analysis.significant
         return True
+
+    async def _analyzer(self, store: SettingsStore) -> tuple[ChangeAnalyzer, str]:
+        """Return the analyzer and model, or raise ``AnalysisError`` if unconfigured."""
+        config = await store.openai(
+            default_model=self._settings.openai_model, env_key=self._settings.openai_api_key
+        )
+        if self._analyzer_override is not None:
+            return self._analyzer_override, config.model
+        if not config.api_key:
+            raise AnalysisError("OpenAI API key is not configured")
+        analyzer = OpenAIChangeAnalyzer(
+            config.api_key,
+            max_diff_chars=self._settings.max_diff_chars_for_ai,
+            price_override=await _price_override(store, config.model),
+        )
+        return analyzer, config.model
+
+    @staticmethod
+    async def _defer_analysis(
+        session: AsyncSession,
+        site: Site,
+        change: ChangeEvent,
+        token: str,
+        result: RunResult,
+        error: str,
+    ) -> None:
+        logger.info("analysis deferred for site %s: %s", site.id, error)
+        if await release_analysis(
+            session,
+            change.id,
+            token,
+            now=datetime.now(UTC),
+            status=AnalysisStatus.ERROR,
+            error=error,
+        ):
+            await session.refresh(change)
+            record_analysis_failure(change, error)
+        result.ai_error = error
 
     async def _require_active_site(self, session: AsyncSession, site_id: int) -> Site:
         site = await session.get(Site, site_id)

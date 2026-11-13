@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import asyncio
 
+import pytest
 from sqlalchemy import func, select
 
 from driftwatch.config import Settings
@@ -18,9 +19,11 @@ from driftwatch.models import (
     Site,
     Snapshot,
 )
-from driftwatch.monitoring.analyzer import Analysis
+from driftwatch.monitoring.analyzer import Analysis, OpenAIChangeAnalyzer
 from driftwatch.runner import SiteRunner
+from driftwatch.security.crypto import SecretBox
 from driftwatch.services import set_site_recipients
+from driftwatch.settings_store import SettingsStore
 from tests.conftest import RecordingChannel, ScriptedCapturer, StubAnalyzer, create_org
 
 
@@ -151,3 +154,51 @@ async def test_concurrent_retry_has_one_provider_call_and_one_reservation(
         assert organization is not None and organization.ai_checks_reserved == 1
         assert await session.scalar(select(func.count()).select_from(AIUsage)) == 1
         assert await session.scalar(select(func.count()).select_from(AnalysisRun)) == 1
+
+
+async def _never_called(self: object, **_: object) -> Analysis:
+    raise AssertionError("the provider must not be called")
+
+
+@pytest.mark.parametrize(
+    ("api_key", "instance_settings", "error"),
+    [
+        ("", {}, "OpenAI API key is not configured"),
+        # A model outside the price catalog needs both prices.
+        (
+            "sk-test-not-a-real-key",
+            {"openai_model": "acme-large", "openai_price_input_per_1m": "1.5"},
+            "Token price overrides are invalid or incomplete for the configured model",
+        ),
+    ],
+)
+async def test_configuration_error_defers_analysis_without_using_the_quota(
+    database: Database,
+    settings: Settings,
+    monkeypatch: pytest.MonkeyPatch,
+    api_key: str,
+    instance_settings: dict[str, str],
+    error: str,
+) -> None:
+    monkeypatch.setattr(OpenAIChangeAnalyzer, "analyze", _never_called)
+    _, change_id, org_id = await _change(database, limit=1)
+    settings.openai_api_key = api_key
+    if instance_settings:
+        async with database.session() as session:
+            box = SecretBox(*settings.encryption_keys)
+            await SettingsStore(session, box).set_many(instance_settings)
+            await session.commit()
+    runner = SiteRunner(database, ScriptedCapturer(), settings, channel=RecordingChannel())
+
+    for _ in range(2):
+        result = await runner.reprocess_change(change_id)
+        assert result.ai_error == error
+
+    async with database.session() as session:
+        change = await session.get(ChangeEvent, change_id)
+        organization = await session.get(Organization, org_id)
+        assert change is not None and organization is not None
+        assert change.analysis_status == AnalysisStatus.ERROR
+        assert change.analysis_lease_token is None
+        assert change.next_retry_at is not None
+        assert organization.ai_checks_reserved == 0
