@@ -10,6 +10,7 @@ probes by actually launching each candidate and keeping the first that works.
 
 from __future__ import annotations
 
+import asyncio
 import logging
 from dataclasses import dataclass, field
 from enum import StrEnum
@@ -53,17 +54,27 @@ def _launch_kwargs(channel: BrowserChannel) -> dict[str, Any]:
 
 
 async def resolve_launch_plan(
-    playwright: Any, *, forced: BrowserChannel = BrowserChannel.AUTO, headless: bool
+    playwright: Any,
+    *,
+    forced: BrowserChannel = BrowserChannel.AUTO,
+    headless: bool,
+    probe_timeout_s: float | None = None,
 ) -> LaunchPlan:
-    """Return the first launchable browser, probing in detection order."""
+    """Return the first launchable browser, probing in detection order.
+
+    ``probe_timeout_s`` bounds each candidate separately. An installed browser that
+    hangs on its first start (Edge on a fresh CI image does) then falls through to
+    the next candidate instead of using up the caller's whole launch budget.
+    """
     from playwright.async_api import Error as PlaywrightError
 
     last_error: Exception | None = None
     for channel in detection_order(forced):
         kwargs = _launch_kwargs(channel)
         try:
-            browser = await playwright.chromium.launch(headless=headless, **kwargs)
-        except PlaywrightError as exc:
+            async with asyncio.timeout(probe_timeout_s):
+                browser = await playwright.chromium.launch(headless=headless, **kwargs)
+        except (PlaywrightError, TimeoutError) as exc:
             last_error = exc
             logger.debug("browser channel %s unavailable: %s", channel, exc)
             continue

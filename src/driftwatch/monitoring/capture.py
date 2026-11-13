@@ -26,6 +26,7 @@ from driftwatch.monitoring.browser import (
     BrowserChannel,
     BrowserUnavailable,
     LaunchPlan,
+    detection_order,
     resolve_launch_plan,
 )
 from driftwatch.monitoring.network_guard import (
@@ -161,9 +162,9 @@ class PlaywrightCapturer:
         self._channel = channel
         self._pin_dns = pin_dns
         self._launch_timeout_s = launch_timeout_seconds
-        # The isolated worker passes an explicit allowlist so Chromium never
-        # inherits the worker auth token (or any accidentally injected secret).
-        # ``None`` preserves the normal environment for local development.
+        # The isolated worker passes an explicit allowlist so the capture browser
+        # does not inherit the worker auth token. ``None`` keeps the normal
+        # environment for local development.
         self._browser_environment = (
             dict(browser_environment) if browser_environment is not None else None
         )
@@ -224,9 +225,13 @@ class PlaywrightCapturer:
             # Bound launch and detection so a wedged browser binary can't hang
             # the (serial) scheduler tick forever — convert it to a transient.
             if self._plan is None:
+                candidates = len(detection_order(self._channel))
                 async with asyncio.timeout(self._launch_timeout_s):
                     self._plan = await resolve_launch_plan(
-                        playwright, forced=self._channel, headless=True
+                        playwright,
+                        forced=self._channel,
+                        headless=True,
+                        probe_timeout_s=self._launch_timeout_s / candidates,
                     )
             launch_kwargs = dict(self._plan.launch_kwargs)
             if resolver_arg:
@@ -300,8 +305,8 @@ class PlaywrightCapturer:
 
     async def _dns_pin_arg(self, url: str) -> str | None:
         """Resolve+validate the host now and return a Chromium ``--host-resolver-rules``
-        arg pinning it to the vetted IP, so the browser connects to the exact address
-        validation approved (closes the resolve-time-vs-connect-time rebind window).
+        arg pinning it to the vetted IP. Only the navigated host is pinned; other
+        hosts are checked by the network guard and resolved again by Chromium.
         Returns ``None`` when pinning is off or the host is already an IP literal."""
         if not self._pin_dns:
             return None

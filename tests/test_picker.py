@@ -2,10 +2,19 @@
 
 from __future__ import annotations
 
+import asyncio
+from types import SimpleNamespace
+
 import httpx
 import pytest
+from playwright.async_api import Error as PlaywrightError
 
-from driftwatch.monitoring.browser import BrowserChannel, detection_order, parse_channel
+from driftwatch.monitoring.browser import (
+    BrowserChannel,
+    detection_order,
+    parse_channel,
+    resolve_launch_plan,
+)
 from driftwatch.monitoring.picker import _OVERLAY_PATH, normalize_step
 from tests.conftest import FakePicker
 
@@ -104,3 +113,35 @@ async def test_picker_accepts_both_modes(admin_client: httpx.AsyncClient, mode: 
     )
     assert response.status_code == 201
     assert response.json()["mode"] == mode
+
+
+class _FakeBrowser:
+    async def close(self) -> None:
+        return None
+
+
+class _FakeChromium:
+    """Edge hangs on its first start, Chrome is missing, bundled Chromium works."""
+
+    def __init__(self) -> None:
+        self.attempts: list[str] = []
+
+    async def launch(self, *, headless: bool, channel: str = "chromium") -> _FakeBrowser:
+        self.attempts.append(channel)
+        if channel == "msedge":
+            await asyncio.Event().wait()
+        if channel == "chrome":
+            raise PlaywrightError("Chromium distribution 'chrome' is not found")
+        return _FakeBrowser()
+
+
+async def test_a_hanging_browser_probe_falls_through_to_the_next_candidate() -> None:
+    chromium = _FakeChromium()
+    playwright = SimpleNamespace(chromium=chromium)
+
+    plan = await asyncio.wait_for(
+        resolve_launch_plan(playwright, headless=True, probe_timeout_s=0.05), timeout=5
+    )
+
+    assert plan.channel is BrowserChannel.CHROMIUM
+    assert chromium.attempts == ["msedge", "chrome", "chromium"]

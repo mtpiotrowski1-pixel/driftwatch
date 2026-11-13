@@ -21,6 +21,7 @@ from driftwatch.capture_worker import (
     create_capture_worker_app,
 )
 from driftwatch.exceptions import InvalidRequest
+from driftwatch.monitoring.browser import BrowserChannel
 from driftwatch.monitoring.capture import (
     CaptureBlocked,
     CapturedPage,
@@ -112,7 +113,7 @@ def fixture_url(monkeypatch: pytest.MonkeyPatch) -> Iterator[str]:
 async def test_browser_retains_short_selected_wrapper_and_actual_document_base(
     fixture_url: str,
 ) -> None:
-    capturer = PlaywrightCapturer(pin_dns=False, settle_ms=0)
+    capturer = PlaywrightCapturer(channel=BrowserChannel.CHROMIUM, pin_dns=False, settle_ms=0)
     result = await capturer.capture(url=f"{fixture_url}/redirect", css_selector="#price")
     assert isinstance(result, CapturedPage)
     assert result.html == '<span id="price">9</span>'
@@ -121,7 +122,7 @@ async def test_browser_retains_short_selected_wrapper_and_actual_document_base(
 
 @pytest.mark.parametrize("status", [404, 503])
 async def test_browser_rejects_http_error_content(fixture_url: str, status: int) -> None:
-    capturer = PlaywrightCapturer(pin_dns=False, settle_ms=0)
+    capturer = PlaywrightCapturer(channel=BrowserChannel.CHROMIUM, pin_dns=False, settle_ms=0)
     with pytest.raises(CaptureHttpError) as failure:
         await capturer.capture(url=f"{fixture_url}/{status}")
     assert failure.value.status_code == status
@@ -129,7 +130,7 @@ async def test_browser_rejects_http_error_content(fixture_url: str, status: int)
 
 
 async def test_browser_uses_per_request_timing(fixture_url: str) -> None:
-    capturer = PlaywrightCapturer(pin_dns=False, settle_ms=0)
+    capturer = PlaywrightCapturer(channel=BrowserChannel.CHROMIUM, pin_dns=False, settle_ms=0)
     result = await capturer.capture(
         url=f"{fixture_url}/delayed", css_selector="#price", timing=CaptureTiming(5, 350)
     )
@@ -138,7 +139,7 @@ async def test_browser_uses_per_request_timing(fixture_url: str) -> None:
 
 
 async def test_browser_only_fills_an_approved_origin(fixture_url: str) -> None:
-    capturer = PlaywrightCapturer(pin_dns=False, settle_ms=0)
+    capturer = PlaywrightCapturer(channel=BrowserChannel.CHROMIUM, pin_dns=False, settle_ms=0)
     steps = [
         {
             "action": "fill",
@@ -155,7 +156,7 @@ async def test_browser_only_fills_an_approved_origin(fixture_url: str) -> None:
 
 
 async def test_browser_rejects_an_http_error_after_an_interaction(fixture_url: str) -> None:
-    capturer = PlaywrightCapturer(pin_dns=False, settle_ms=0)
+    capturer = PlaywrightCapturer(channel=BrowserChannel.CHROMIUM, pin_dns=False, settle_ms=0)
     with pytest.raises(CaptureHttpError) as failure:
         await capturer.capture(
             url=f"{fixture_url}/click-error",
@@ -172,7 +173,7 @@ async def test_remote_worker_runs_real_browser_with_request_timing(
     token = "synthetic-capture-token-0123456789abcdef"
     worker = create_capture_worker_app(
         CaptureWorkerSettings(token=token),
-        capturer=PlaywrightCapturer(pin_dns=False, settle_ms=0),
+        capturer=PlaywrightCapturer(channel=BrowserChannel.CHROMIUM, pin_dns=False, settle_ms=0),
     )
     remote = RemotePageCapturer(
         service_url="http://worker",
@@ -195,7 +196,7 @@ async def test_remote_worker_runs_real_browser_with_request_timing(
 
 
 async def test_browser_rejects_an_http_error_during_settling(fixture_url: str) -> None:
-    capturer = PlaywrightCapturer(pin_dns=False, settle_ms=500)
+    capturer = PlaywrightCapturer(channel=BrowserChannel.CHROMIUM, pin_dns=False, settle_ms=500)
     with pytest.raises(CaptureHttpError) as failure:
         await capturer.capture(url=f"{fixture_url}/delayed-error")
     assert failure.value.status_code == 503
