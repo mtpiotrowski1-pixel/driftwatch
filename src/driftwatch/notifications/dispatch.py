@@ -34,7 +34,6 @@ from driftwatch.notifications.outbox import (
     enqueue_notification,
 )
 from driftwatch.notifications.render import RenderedEmail, render_change_email
-from driftwatch.notifications.webhook import WebhookError, WebhookEvent, send_webhook
 from driftwatch.security.crypto import SecretBox
 from driftwatch.settings_store import WebhookConfig
 
@@ -149,44 +148,6 @@ async def dispatch_change(
         channel=channel,
         secret_box=secret_box,
         force=force,
-    )
-
-
-async def _send_webhook(
-    change: ChangeEvent,
-    site: Site,
-    webhook: WebhookConfig,
-    details_url: str,
-    detected_at: str,
-    language: str = DEFAULT_LANGUAGE,
-) -> NotificationLog:
-    # The endpoint label, never the URL: the configured URL is a secret (e.g. a
-    # Slack token) and must not land in the audit log.
-    label = f"webhook:{webhook.format}"
-    event = WebhookEvent(
-        site_label=site.name or site.url,
-        site_url=site.url,
-        headline=change.headline or "",
-        summary=change.summary or "",
-        significant=bool(change.significant),
-        details_url=details_url,
-        detected_at=detected_at,
-    )
-    try:
-        await send_webhook(event, webhook, language=language)
-    except WebhookError:
-        return NotificationLog(
-            change_id=change.id,
-            recipient_email=label,
-            channel="webhook",
-            status=NotificationStatus.FAILED,
-            error="webhook delivery failed",
-        )
-    return NotificationLog(
-        change_id=change.id,
-        recipient_email=label,
-        channel="webhook",
-        status=NotificationStatus.SENT,
     )
 
 

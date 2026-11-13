@@ -113,8 +113,8 @@ _BILLING_RECOVERY_ENDPOINTS = frozenset(
 )
 
 # Entities carrying organization_id that the per-request session filters to the
-# caller's org. Event tables (Snapshot/ChangeEvent/AIUsage/NotificationLog) are
-# isolated by joining through a scoped Site/Recipient, so they need no column.
+# caller's org. Snapshot, ChangeEvent and NotificationLog have no such column and
+# are isolated by joining through a scoped Site or Recipient.
 _ORG_SCOPED_ENTITIES = (
     Project,
     Site,
@@ -465,31 +465,6 @@ def _confirmed_organization_id(session: AsyncSession) -> int | None:
     return organization_id
 
 
-async def optional_user(
-    request: Request, session: SessionDep, settings: SettingsDep
-) -> User | None:
-    """The current user if a valid session cookie is present, else None — for
-    endpoints that are public but personalise their response when signed in. Does
-    not raise on a missing or stale session, and does not apply the org-scope
-    filter (callers only read non-scoped settings)."""
-    token = request.cookies.get(SESSION_COOKIE)
-    if not token:
-        return None
-    try:
-        claims = read_session(token, secret=settings.token_secrets)
-    except SessionError:
-        return None
-    user = await session.get(User, claims.user_id)
-    if (
-        user is None
-        or claims.token_version != user.token_version
-        or claims.session_generation != user.session_generation
-        or not user.is_active
-    ):
-        return None
-    return user
-
-
 async def require_admin(user: Annotated[User, Depends(get_current_user)]) -> User:
     # Org-admin within their org, or the instance superadmin everywhere.
     if not (user.is_admin or user.is_superadmin):
@@ -581,7 +556,6 @@ async def require_explicit_org_context(
 
 
 CurrentUser = Annotated[User, Depends(get_current_user)]
-OptionalCurrentUser = Annotated[User | None, Depends(optional_user)]
 AdminUser = Annotated[User, Depends(require_admin)]
 SuperadminUser = Annotated[User, Depends(require_superadmin)]
 InstanceSuperadminUser = Annotated[User, Depends(require_instance_superadmin)]

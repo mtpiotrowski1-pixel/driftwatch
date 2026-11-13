@@ -1,1 +1,1 @@
-"""HTTP layer: routers, dependencies, and the origin guard."""
+"""HTTP layer: routers, request dependencies and middleware."""

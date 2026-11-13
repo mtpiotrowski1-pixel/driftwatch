@@ -290,15 +290,6 @@ class DisabledBillingProvider:
 # Explicit product policy. `past_due` retains access only for a bounded grace
 # window; `unpaid` and `canceled` suspend immediately. Unknown/initial states do
 # not grant paid access and fail closed by suspending provider-managed access.
-SUBSCRIPTION_ACCESS_MATRIX: Mapping[str, str] = {
-    "active": "grant",
-    "trialing": "grant_until_trial_end",
-    "past_due": "grant_during_bounded_grace_then_suspend",
-    "unpaid": "revoke_and_suspend",
-    "canceled": "revoke_and_suspend",
-}
-
-
 @dataclass(frozen=True, slots=True)
 class SubscriptionAccessDecision:
     entitled: bool

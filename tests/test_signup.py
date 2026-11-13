@@ -11,8 +11,8 @@ from sqlalchemy import select
 from driftwatch.config import Settings
 from driftwatch.db import Database
 from driftwatch.models import Organization, Plan
-from driftwatch.quota import ai_check_limit_reached
 from driftwatch.security import two_factor
+from tests.conftest import can_reserve_ai_check
 
 
 @pytest_asyncio.fixture
@@ -241,7 +241,7 @@ async def test_signup_entitlement_enforces_one_site_and_zero_ai_checks(
         organization = (
             await session.execute(select(Organization).where(Organization.name == "Bounded"))
         ).scalar_one()
-        assert await ai_check_limit_reached(session, organization.id) is True
+        assert await can_reserve_ai_check(session, organization.id) is False
 
 
 async def test_signup_rate_limit_caps_org_creation_per_ip(

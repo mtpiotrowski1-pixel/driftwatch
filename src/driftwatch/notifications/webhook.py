@@ -9,6 +9,7 @@ against the host's own network, and redirects are not followed.
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass
 
 import httpx
@@ -94,10 +95,15 @@ async def _post(
 def _payload(event: WebhookEvent, fmt: str, language: str) -> dict[str, object]:
     # The generic JSON payload stays language-neutral (machine-readable keys and
     # raw values); only the human-facing chat formats are localized.
+    # Headline and summary come from a model that read a third-party page, so they
+    # must not be able to mention a whole channel.
     if fmt == "slack":
-        return {"text": _chat_text(event, language)}
+        return {"text": _chat_text(event, language, escape=_slack_escape)}
     if fmt == "discord":
-        return {"content": _chat_text(event, language)}
+        return {
+            "content": _chat_text(event, language, escape=str),
+            "allowed_mentions": {"parse": []},
+        }
     return {
         "event": "change_detected",
         "site": event.site_label,
@@ -110,10 +116,15 @@ def _payload(event: WebhookEvent, fmt: str, language: str) -> dict[str, object]:
     }
 
 
-def _chat_text(event: WebhookEvent, language: str) -> str:
+def _chat_text(event: WebhookEvent, language: str, *, escape: Callable[[str], str]) -> str:
     badge = tr(language, "badge.significant" if event.significant else "badge.change")
-    lines = [f"*{badge}* — {event.headline or event.site_label}"]
+    lines = [f"*{badge}*: {escape(event.headline or event.site_label)}"]
     if event.summary:
-        lines.append(event.summary)
+        lines.append(escape(event.summary))
     lines.append(event.details_url)
     return "\n".join(lines)
+
+
+def _slack_escape(text: str) -> str:
+    """Slack's documented escaping, which also disables ``<!channel>`` style mentions."""
+    return text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")

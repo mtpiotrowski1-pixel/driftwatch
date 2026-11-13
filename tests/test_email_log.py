@@ -1,7 +1,8 @@
-"""Regression tests for the metadata-only local email channel."""
+"""Log and Brevo email channels: metadata-only logging, idempotency, safe errors."""
 
 from __future__ import annotations
 
+import json
 import logging
 from uuid import UUID
 
@@ -35,47 +36,26 @@ async def test_log_channel_never_logs_message_content_or_full_recipient(caplog) 
     assert "Reset your password" not in rendered
 
 
-def _stub_brevo(
-    monkeypatch: pytest.MonkeyPatch,
-    responses: list[httpx.Response],
-) -> list[dict[str, object]]:
-    requests: list[dict[str, object]] = []
+def _brevo(responses: list[httpx.Response]) -> tuple[BrevoChannel, list[httpx.Request]]:
+    requests: list[httpx.Request] = []
 
-    class StubClient:
-        def __init__(self, *, timeout: float) -> None:
-            assert timeout == 15.0
+    def handler(request: httpx.Request) -> httpx.Response:
+        requests.append(request)
+        return responses.pop(0)
 
-        async def __aenter__(self) -> StubClient:
-            return self
-
-        async def __aexit__(self, *_: object) -> None:
-            return None
-
-        async def post(
-            self,
-            url: str,
-            *,
-            json: object,
-            headers: dict[str, str],
-        ) -> httpx.Response:
-            requests.append({"url": url, "json": json, "headers": headers})
-            return responses.pop(0)
-
-    monkeypatch.setattr(httpx, "AsyncClient", StubClient)
-    return requests
+    channel = BrevoChannel(
+        "api-secret", Sender("sender@example.com"), transport=httpx.MockTransport(handler)
+    )
+    return channel, requests
 
 
-async def test_brevo_uses_stable_native_uuid_idempotency(
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    requests = _stub_brevo(
-        monkeypatch,
+async def test_brevo_uses_stable_native_uuid_idempotency() -> None:
+    channel, requests = _brevo(
         [
             httpx.Response(201, json={"messageId": "first"}),
             httpx.Response(201, json={"messageId": "second"}),
-        ],
+        ]
     )
-    channel = BrevoChannel("api-secret", Sender("sender@example.com"))
     envelope = EmailEnvelope(
         to="person@example.com",
         subject="Account invitation",
@@ -87,7 +67,7 @@ async def test_brevo_uses_stable_native_uuid_idempotency(
     assert await channel.send(envelope) == "first"
     assert await channel.send(envelope) == "second"
 
-    payloads = [request["json"] for request in requests]
+    payloads = [json.loads(request.content) for request in requests]
     assert all(isinstance(payload, dict) for payload in payloads)
     idempotency_values = [payload["headers"]["idempotencyKey"] for payload in payloads]
     assert idempotency_values[0] == idempotency_values[1]
@@ -95,14 +75,8 @@ async def test_brevo_uses_stable_native_uuid_idempotency(
     assert all("X-Driftwatch-Idempotency-Key" not in payload["headers"] for payload in payloads)
 
 
-async def test_brevo_duplicate_acknowledgement_is_a_successful_handoff(
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    _stub_brevo(
-        monkeypatch,
-        [httpx.Response(400, json={"code": "duplicate_parameter"})],
-    )
-    channel = BrevoChannel("api-secret", Sender("sender@example.com"))
+async def test_brevo_duplicate_acknowledgement_is_a_successful_handoff() -> None:
+    channel, _ = _brevo([httpx.Response(400, json={"code": "duplicate_parameter"})])
 
     result = await channel.send(
         EmailEnvelope(
@@ -117,11 +91,8 @@ async def test_brevo_duplicate_acknowledgement_is_a_successful_handoff(
     assert result == "brevo-idempotent-duplicate"
 
 
-async def test_brevo_error_does_not_echo_provider_response(
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    _stub_brevo(
-        monkeypatch,
+async def test_brevo_error_does_not_echo_provider_response() -> None:
+    channel, _ = _brevo(
         [
             httpx.Response(
                 400,
@@ -130,9 +101,8 @@ async def test_brevo_error_does_not_echo_provider_response(
                     "message": "person@example.com sensitive-jwt",
                 },
             )
-        ],
+        ]
     )
-    channel = BrevoChannel("api-secret", Sender("sender@example.com"))
 
     with pytest.raises(SendError) as caught:
         await channel.send(
@@ -147,3 +117,19 @@ async def test_brevo_error_does_not_echo_provider_response(
     assert "HTTP 400" in str(caught.value)
     assert "person@example.com" not in str(caught.value)
     assert "sensitive-jwt" not in str(caught.value)
+
+
+async def test_brevo_network_failure_is_a_send_error_without_request_details() -> None:
+    def refuse(request: httpx.Request) -> httpx.Response:
+        raise httpx.ConnectTimeout("timed out posting with api-key api-secret", request=request)
+
+    channel = BrevoChannel(
+        "api-secret", Sender("sender@example.com"), transport=httpx.MockTransport(refuse)
+    )
+
+    with pytest.raises(SendError) as caught:
+        await channel.send(
+            EmailEnvelope(to="person@example.com", subject="s", text_body="b", html_body="<p>b</p>")
+        )
+
+    assert str(caught.value) == "brevo request failed"

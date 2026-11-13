@@ -35,6 +35,7 @@ from driftwatch.db import (
 )
 from driftwatch.exceptions import InvalidRequest
 from driftwatch.models import User
+from driftwatch.schemas import RestoreResult
 
 logger = logging.getLogger(__name__)
 
@@ -124,7 +125,7 @@ async def download_backup(
         raise
 
 
-@router.post("/admin/restore", status_code=status.HTTP_200_OK)
+@router.post("/admin/restore", response_model=RestoreResult)
 async def restore_backup(
     request: Request,
     settings: SettingsDep,
@@ -134,7 +135,7 @@ async def restore_backup(
     maintenance: MaintenanceDep,
     admin: InstanceSuperadminUser,
     _: StepUpUser,
-) -> dict[str, str]:
+) -> RestoreResult:
     """Replace the live database with an uploaded snapshot.
 
     The upload is validated as an intact SQLite database carrying the expected
@@ -204,7 +205,7 @@ async def restore_backup(
             email=admin_email,
             action=f"backup restore (safety copy {safety.name})",
         )
-        return {"safety_copy": safety.name}
+        return RestoreResult(safety_copy=safety.name)
     finally:
         staged.unlink(missing_ok=True)
 

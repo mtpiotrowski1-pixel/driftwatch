@@ -112,8 +112,11 @@ class CaptureWorkerSettings(BaseSettings):
 
     @model_validator(mode="after")
     def _validate_boundary(self) -> CaptureWorkerSettings:
-        if len(self.token.get_secret_value()) < 32:
+        token = self.token.get_secret_value()
+        if len(token) < 32:
             raise ValueError("Capture worker token must contain at least 32 characters")
+        if token.lower().startswith(("change-me", "set-a-")):
+            raise ValueError("Capture worker token is a published example value")
         forbidden = sorted(
             name for name in os.environ if name.upper() in _FORBIDDEN_APPLICATION_ENV
         )

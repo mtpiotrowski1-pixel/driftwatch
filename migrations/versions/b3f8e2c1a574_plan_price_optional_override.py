@@ -33,6 +33,9 @@ def upgrade() -> None:
 
 def downgrade() -> None:
     """Downgrade schema."""
+    # NULL means "follow the pricing algorithm", which the old NOT NULL column
+    # cannot express; store an explicit zero override before restoring it.
+    op.execute("UPDATE plans SET price_override_cents = 0 WHERE price_override_cents IS NULL")
     with op.batch_alter_table("plans", schema=None) as batch_op:
         batch_op.alter_column(
             "price_override_cents",

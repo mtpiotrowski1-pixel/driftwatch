@@ -410,6 +410,45 @@ async def test_webhook_outbox_encrypts_target_and_tracks_its_own_state(
     }
 
 
+async def test_failed_webhook_is_logged_by_label_without_its_secret_url(
+    database: Database,
+) -> None:
+    site_id, change_id = await _seed(database)
+    secret_url = "http://127.0.0.1/secret-token"
+    async with database.session() as session:
+        site = await session.get(Site, site_id)
+        change = await session.get(ChangeEvent, change_id)
+        assert site is not None and change is not None
+        await dispatch_change(
+            session,
+            change,
+            site,
+            channel=RecordingChannel(),
+            app_base_url="http://localhost:8000",
+            webhook=WebhookConfig(url=secret_url, format="slack"),
+            secret_box=SecretBox("test-outbox-secret"),
+        )
+
+    async with database.session() as session:
+        log = (
+            await session.execute(
+                select(NotificationLog).where(NotificationLog.channel == "webhook")
+            )
+        ).scalar_one()
+        delivery = (
+            await session.execute(
+                select(NotificationDelivery).where(NotificationDelivery.kind == "webhook")
+            )
+        ).scalar_one()
+    assert log.status == NotificationStatus.FAILED
+    assert log.recipient_email == "webhook:slack"
+    assert log.error == "webhook delivery failed"
+    assert delivery.status != NotificationDeliveryStatus.SENT
+    stored = " ".join(str(value) for value in (log.recipient_email, log.error, delivery.last_error))
+    assert "127.0.0.1" not in stored
+    assert "secret-token" not in stored
+
+
 async def test_expired_lease_recovers_delivery_after_worker_crash(database: Database) -> None:
     _, change_id = await _seed(database)
     started = datetime.now(UTC)

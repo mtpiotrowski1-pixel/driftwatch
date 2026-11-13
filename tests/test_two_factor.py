@@ -31,6 +31,8 @@ def test_totp_rejects_wrong_and_malformed_codes() -> None:
     assert two_factor.verify(_RFC_SECRET, "000000", at=59, window=0) is False
     assert two_factor.verify(_RFC_SECRET, "28708", at=59) is False  # too short
     assert two_factor.verify(_RFC_SECRET, "abcdef", at=59) is False
+    # Arabic-Indic digits for 287082: isdigit() accepts them, compare_digest would raise.
+    assert two_factor.verify(_RFC_SECRET, "٢٨٧٠٨٢", at=59) is False
 
 
 def test_totp_tolerates_one_step_of_drift() -> None:

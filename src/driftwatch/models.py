@@ -1,11 +1,12 @@
 """SQLAlchemy ORM models for Driftwatch.
 
-The schema models a small, shared monitoring workspace: ``Site`` rows are
-checked on their own schedule, each check stores a ``Snapshot`` and, when the
-content meaningfully changed, a ``ChangeEvent`` carrying the diff and the AI
-verdict. Sites can be grouped into ``Project`` workspaces that supply default AI
-rules and notification settings, and ``Recipient`` rows are notified either per
-site or per project.
+``Organization`` is the tenant boundary. Within it, ``Site`` rows are checked on
+their own schedule; each successful check stores a ``Snapshot`` and, when the
+content changed, a ``ChangeEvent`` with the diff and the optional AI verdict.
+``Project`` groups sites and supplies default rules and recipients. The work
+queues (``SiteCheckJob``, ``NotificationOutbox``/``NotificationDelivery``,
+``AccountEmailJob``), the audit ledger and the optional billing tables are
+defined further down.
 """
 
 from __future__ import annotations
@@ -540,7 +541,10 @@ class AuditEvent(Base):
 @event.listens_for(AuditEvent, "before_update")
 @event.listens_for(AuditEvent, "before_delete")
 def _protect_audit_event(*_: object) -> None:
-    """Keep the audit ledger append-only through every ORM write path."""
+    """Reject ORM flushes that update or delete audit rows.
+
+    Bulk ``update()``/``delete()`` statements bypass mapper events; the database
+    triggers added in migration ``d0f6b8c2a4e1`` cover those."""
     raise RuntimeError("Audit events are append-only")
 
 

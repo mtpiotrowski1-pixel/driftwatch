@@ -1,8 +1,7 @@
 """Application configuration, loaded from the environment or a local ``.env``.
 
-A single :class:`Settings` instance is created at import time and shared through
-:func:`get_settings`. Everything that needs configuration depends on this object
-rather than reading ``os.environ`` directly.
+:func:`get_settings` builds one :class:`Settings` instance on first use and
+caches it. ``.env`` is read from the current working directory.
 """
 
 from __future__ import annotations
@@ -22,11 +21,26 @@ DEFAULT_DATA_DIR = PROJECT_ROOT / "data"
 INSECURE_SECRET_KEY = "dev-insecure-change-me"
 SUPPORTED_STRIPE_API_VERSION = "2025-06-30.basil"
 _OFFICIAL_STRIPE_API_ORIGIN = "https://api.stripe.com"
-# Publicly known values that must never sign a public deployment: the dev
-# default above, and the .env.example placeholder — which is long enough to
-# pass the length check, so an unedited `cp .env.example .env` would otherwise
-# boot with a secret anyone can read off GitHub.
-_KNOWN_INSECURE_SECRET_KEYS = frozenset({INSECURE_SECRET_KEY, "change-me-to-a-long-random-string"})
+# Values published in this repository must never sign or encrypt a public
+# deployment. The .env.example placeholders are long enough to pass the length
+# check, so an unedited copy would otherwise boot with keys anyone can read.
+_KNOWN_INSECURE_SECRET_KEYS = frozenset(
+    {
+        INSECURE_SECRET_KEY,
+        "change-me-to-a-long-random-string",
+        "set-a-distinct-strong-session-key",
+        "set-a-distinct-strong-encryption-key",
+        "set-a-distinct-long-random-token",
+    }
+)
+_PLACEHOLDER_PREFIXES = ("change-me", "set-a-")
+
+
+def is_placeholder_secret(value: str) -> bool:
+    """True for a key copied from the repository's examples rather than generated."""
+    return value in _KNOWN_INSECURE_SECRET_KEYS or value.lower().startswith(_PLACEHOLDER_PREFIXES)
+
+
 # Minimum secret length on a public deploy — 32 chars keeps the HMAC key from
 # being short enough to brute-force, matching the JWT HS256 recommendation.
 _MIN_SECRET_KEY_LENGTH = 32
@@ -250,6 +264,8 @@ class Settings(BaseSettings):
                 "DRIFTWATCH_CAPTURE_WORKER_URL and DRIFTWATCH_CAPTURE_WORKER_TOKEN "
                 "must be configured together."
             )
+        if worker_token and is_placeholder_secret(worker_token):
+            raise ValueError("DRIFTWATCH_CAPTURE_WORKER_TOKEN is a published example value.")
         if worker_url:
             parsed = urlsplit(worker_url)
             try:
@@ -388,8 +404,7 @@ class Settings(BaseSettings):
             }
             for label, keys in configured.items():
                 if any(
-                    key in _KNOWN_INSECURE_SECRET_KEYS or len(key) < _MIN_SECRET_KEY_LENGTH
-                    for key in keys
+                    is_placeholder_secret(key) or len(key) < _MIN_SECRET_KEY_LENGTH for key in keys
                 ):
                     raise ValueError(
                         f"{label} and every configured previous key must be strong, unique "

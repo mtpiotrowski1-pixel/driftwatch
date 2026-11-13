@@ -1,8 +1,7 @@
-"""Render line-level diffs of canonical content text.
+"""Render the line-level HTML diff shown in the change viewer.
 
-The unified text form feeds the AI and the XLSX export; the HTML form drives
-the in-app diff viewer. Page content is attacker-controlled, so every line is
-HTML-escaped before it reaches the markup.
+Page content is attacker-controlled, so every line is HTML-escaped before it
+reaches the markup.
 """
 
 from __future__ import annotations
@@ -11,17 +10,6 @@ import difflib
 from html import escape
 
 MAX_HTML_DIFF_CHARS = 200_000
-
-
-def unified_text_diff(old: str, new: str) -> str:
-    diff = difflib.unified_diff(
-        old.splitlines(),
-        new.splitlines(),
-        fromfile="previous",
-        tofile="current",
-        lineterm="",
-    )
-    return "\n".join(diff)
 
 
 def html_diff(old: str, new: str) -> str:

@@ -1,6 +1,6 @@
 """Edit-scope checks for the shared workspace.
 
-Every signed-in member may *read* all shared data. Editing is restricted:
+Every signed-in member may *read* their organization's data. Editing is restricted:
 administrators may edit anything, and other members only what they have been
 granted — a whole project (and the sites within it) or an individual site.
 Creating a project is a structural change reserved for administrators.

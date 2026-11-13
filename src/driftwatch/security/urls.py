@@ -8,8 +8,9 @@ shared/CGNAT, …) address. Resolution fails closed: a host that cannot be
 resolved is rejected rather than waved through.
 
 :func:`resolve_public_url` additionally returns the vetted IPs so the caller can
-pin the connection to a validated address (see the capturer's DNS pinning),
-closing the resolve-time-vs-connect-time rebind window.
+pin a connection to a validated address. HTTP clients pin every connection; the
+browser can pin only the first host, so its subresources still need a packet
+filter (see :mod:`driftwatch.monitoring.network_guard`).
 """
 
 from __future__ import annotations

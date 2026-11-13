@@ -153,6 +153,22 @@ async def test_login_is_throttled_after_repeated_failures(client: httpx.AsyncCli
     assert statuses[10] == 429
 
 
+async def test_own_successful_login_does_not_refill_the_address_budget(
+    client: httpx.AsyncClient,
+) -> None:
+    own = {"email": "attacker@example.com", "password": "password123"}
+    registered = await client.post("/api/auth/register", json=own)
+    assert registered.status_code == 201, registered.text
+    guess = {"email": "victim@example.com", "password": "guess"}
+
+    statuses = [(await client.post("/api/auth/login", json=guess)).status_code for _ in range(9)]
+    assert statuses == [401] * 9
+    assert (await client.post("/api/auth/login", json=own)).status_code == 200
+    assert (await client.post("/api/auth/login", json=guess)).status_code == 401
+
+    assert (await client.post("/api/auth/login", json=guess)).status_code == 429
+
+
 async def test_change_password_is_throttled(client: httpx.AsyncClient) -> None:
     await client.post(
         "/api/auth/register", json={"email": "user@example.com", "password": "password123"}

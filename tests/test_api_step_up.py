@@ -261,7 +261,7 @@ async def test_delivery_route_settings_require_step_up(
     assert saved.status_code == 200, saved.text
 
 
-async def test_step_up_is_throttled_per_account_and_client(
+async def test_step_up_is_throttled_per_account(
     admin_client: httpx.AsyncClient,
 ) -> None:
     statuses = [

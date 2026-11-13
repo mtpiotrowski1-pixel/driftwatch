@@ -7,12 +7,13 @@ columns from leaking into responses.
 
 from __future__ import annotations
 
-from contextlib import suppress
 from datetime import date, datetime
-from typing import ClassVar, Literal
+from typing import Annotated, ClassVar, Literal
 from uuid import UUID
 
+import soupsieve
 from pydantic import (
+    AfterValidator,
     BaseModel,
     ConfigDict,
     EmailStr,
@@ -33,6 +34,23 @@ from driftwatch.enums import (
     RetryStatus,
 )
 
+
+def _ignore_selector(value: str) -> str:
+    # Ignore selectors run through BeautifulSoup, so reject what soupsieve cannot
+    # parse here instead of failing every later check of the site.
+    try:
+        soupsieve.compile(value)
+    except soupsieve.SelectorSyntaxError as exc:
+        raise ValueError(f"Invalid CSS selector: {value!r}") from exc
+    return value
+
+
+IgnoreSelector = Annotated[
+    str, Field(min_length=1, max_length=500), AfterValidator(_ignore_selector)
+]
+# Matches the String(200) name columns.
+DisplayName = Annotated[str, Field(max_length=200)]
+
 CheckStatusLiteral = Literal["baseline", "unchanged", "changed"]
 PickerStateLiteral = Literal["starting", "waiting", "saved", "cancelled", "timed_out", "error"]
 PricingCurrency = Literal["USD", "EUR", "GBP", "PLN"]
@@ -44,8 +62,8 @@ SecretSettingKey = Literal[
 ]
 
 # Branding values are rendered into HTML attributes and CSS, so constrain them
-# tightly. Each allows the empty string (which clears an org override): a hex
-# colour. Brand images are accepted only by the validated same-origin upload
+# tightly. A colour is a hex value or the empty string, which clears an org
+# override. Brand images are accepted only by the validated same-origin upload
 # endpoint, never as caller-provided URLs.
 _HEX_OR_EMPTY = r"^(#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6}))?$"
 
@@ -229,7 +247,7 @@ class AuthCapabilitiesOut(BaseModel):
 class RegisterRequest(BaseModel):
     email: EmailStr
     password: str = Field(min_length=8, max_length=128)
-    name: str | None = None
+    name: DisplayName | None = None
     # A company name spins up a new, isolated organization for this account.
     # plan_key remains accepted as non-entitling client intent for compatibility;
     # registration never copies catalog caps before verified payment activation.
@@ -307,10 +325,6 @@ class TotpEnableRequest(BaseModel):
 
 class TotpCodesOut(BaseModel):
     recovery_codes: list[str]
-
-
-class TotpDisableRequest(BaseModel):
-    password: str = Field(min_length=1, max_length=128)
 
 
 class StepUpRequest(BaseModel):
@@ -505,14 +519,14 @@ class UserCreate(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     email: EmailStr
-    name: str | None = None
+    name: DisplayName | None = None
     is_admin: bool = False
 
 
 class UserUpdate(_PatchModel):
     _non_nullable_fields = ("email", "is_admin", "is_active")
     email: EmailStr | None = None
-    name: str | None = None
+    name: DisplayName | None = None
     is_admin: bool | None = None
     is_active: bool | None = None
 
@@ -603,26 +617,6 @@ class InteractionStepIn(BaseModel):
     secret_ref: UUID | None = None
     timeout_ms: int = Field(default=10_000, ge=0, le=120_000)
 
-    @model_validator(mode="before")
-    @classmethod
-    def _upgrade_legacy_value(cls, raw: object) -> object:
-        """Accept the old request shape without ever retaining ``value``.
-
-        This compatibility path can be removed after deployed clients have
-        moved to ``secret_value``. Legacy waits used ``value`` for milliseconds;
-        legacy fills used it for the value that now goes straight to the vault.
-        """
-        if not isinstance(raw, dict) or "value" not in raw:
-            return raw
-        upgraded = dict(raw)
-        value = upgraded.pop("value")
-        if upgraded.get("action") == "fill" and "secret_value" not in upgraded:
-            upgraded["secret_value"] = value
-        elif upgraded.get("action") == "wait" and "timeout_ms" not in upgraded:
-            with suppress(TypeError, ValueError):
-                upgraded["timeout_ms"] = int(value)
-        return upgraded
-
     @model_validator(mode="after")
     def _validate_shape(self) -> InteractionStepIn:
         if self.action != "wait" and not (self.selector or "").strip():
@@ -657,7 +651,7 @@ class SiteCreate(BaseModel):
     css_selector: str | None = Field(default=None, max_length=500)
     prompt: str | None = None
     interaction_steps: list[InteractionStepIn] = Field(default_factory=list, max_length=20)
-    ignore_selectors: list[str] = Field(default_factory=list)
+    ignore_selectors: list[IgnoreSelector] = Field(default_factory=list)
     check_interval_minutes: int = Field(default=60, ge=1, le=10_080)
     enabled: bool = True
     notification_mode: NotificationMode | None = None
@@ -690,7 +684,7 @@ class SiteUpdate(_PatchModel):
     css_selector: str | None = Field(default=None, max_length=500)
     prompt: str | None = None
     interaction_steps: list[InteractionStepIn] | None = Field(default=None, max_length=20)
-    ignore_selectors: list[str] | None = None
+    ignore_selectors: list[IgnoreSelector] | None = None
     check_interval_minutes: int | None = Field(default=None, ge=1, le=10_080)
     enabled: bool | None = None
     notification_mode: NotificationMode | None = None
@@ -728,12 +722,12 @@ class SiteOut(_ORMModel):
 
 class RecipientCreate(BaseModel):
     email: EmailStr
-    name: str | None = None
+    name: DisplayName | None = None
 
 
 class RecipientUpdate(_PatchModel):
     _non_nullable_fields = ("active",)
-    name: str | None = None
+    name: DisplayName | None = None
     active: bool | None = None
 
 
@@ -746,7 +740,7 @@ class RecipientOut(_ORMModel):
 
 class SubstitutionCreate(BaseModel):
     substitute_email: EmailStr
-    substitute_name: str | None = None
+    substitute_name: DisplayName | None = None
     start_date: date
     end_date: date
     # Optional scope: confine the cover to one project or one site. Both unset
@@ -907,7 +901,7 @@ class SettingsUpdate(BaseModel):
     default_notification_mode: NotificationMode | None = None
     openai_api_key: str | None = None
     openai_model: str | None = None
-    ignore_selectors: list[str] | None = None
+    ignore_selectors: list[IgnoreSelector] | None = None
     email_provider: str | None = Field(default=None, pattern="^(auto|brevo|smtp|log)$")
     smtp_host: str | None = None
     smtp_port: int | None = Field(default=None, ge=1, le=65_535)

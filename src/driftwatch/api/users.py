@@ -124,7 +124,7 @@ async def update_user(
     settings: SettingsDep,
     admin: AdminUser,
 ) -> UserDetail:
-    user = await _require_manageable_user(session, user_id, admin)
+    user = await _require_manageable_user(session, user_id)
     fields = payload.model_dump(exclude_unset=True)
     if fields.get("email"):
         fields["email"] = fields["email"].lower()
@@ -135,12 +135,6 @@ async def update_user(
     if sensitive_change:
         await require_step_up(request, admin, settings)
     before = {field: getattr(user, field) for field in ("email", "name", "is_admin", "is_active")}
-    await _protect_last_active_superadmin(
-        session,
-        user,
-        demoting=fields.get("is_admin") is False,
-        deactivating=fields.get("is_active") is False,
-    )
     if user.id == admin.id:
         if fields.get("is_admin") is False:
             raise HTTPException(
@@ -189,7 +183,7 @@ async def invite_user(
 ) -> None:
     # Resolve the tenant-scoped target before issuing a step-up challenge so a
     # foreign identifier remains indistinguishable from a missing account.
-    user = await _require_manageable_user(session, user_id, admin)
+    user = await _require_manageable_user(session, user_id)
     await require_step_up(request, admin, settings)
     if not user.is_active:
         raise HTTPException(
@@ -230,7 +224,7 @@ async def revoke_user_sessions(
     admin: AdminUser,
     _: StepUpUser,
 ) -> None:
-    user = await _require_manageable_user(session, user_id, admin)
+    user = await _require_manageable_user(session, user_id)
     user.token_version += 1
     record_audit_event(
         session,
@@ -252,7 +246,7 @@ async def reset_user_totp(
     admin: AdminUser,
     _: StepUpUser,
 ) -> None:
-    user = await _require_manageable_user(session, user_id, admin)
+    user = await _require_manageable_user(session, user_id)
     user.totp_enabled = False
     user.totp_secret = None
     user.recovery_code_hashes = []
@@ -278,7 +272,7 @@ async def set_permissions(
     settings: SettingsDep,
     admin: AdminUser,
 ) -> UserDetail:
-    user = await _require_manageable_user(session, user_id, admin)
+    user = await _require_manageable_user(session, user_id)
     await require_step_up(request, admin, settings)
     # The grant association tables carry no org column, so validate the ids on the
     # org-scoped session first — a cross-org project/site id won't resolve here.
@@ -320,11 +314,10 @@ async def delete_user(
     settings: SettingsDep,
     admin: AdminUser,
 ) -> None:
-    user = await _require_manageable_user(session, user_id, admin)
+    user = await _require_manageable_user(session, user_id)
     # Resolve the tenant-scoped target first so a foreign id remains a uniform
     # 404 rather than revealing its existence through a step-up challenge.
     await require_step_up(request, admin, settings)
-    await _protect_last_active_superadmin(session, user, deleting=True)
     if user.id == admin.id:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "You cannot delete your own account")
     billing_reference = await session.scalar(
@@ -370,46 +363,16 @@ async def _require_user(session: AsyncSession, user_id: int) -> User:
     return user
 
 
-async def _require_manageable_user(session: AsyncSession, user_id: int, admin: User) -> User:
-    """Resolve an account without exposing operator identities to tenant admins."""
+async def _require_manageable_user(session: AsyncSession, user_id: int) -> User:
+    """Resolve an account without exposing operator identities to tenant admins.
+
+    Operators are managed through ``/api/operators``, which also protects the last
+    active operator; here they are reported as missing.
+    """
     user = await _require_user(session, user_id)
     if user.is_superadmin:
         raise HTTPException(status.HTTP_404_NOT_FOUND, f"User {user_id} not found")
     return user
-
-
-async def _protect_last_active_superadmin(
-    session: AsyncSession,
-    user: User,
-    *,
-    demoting: bool = False,
-    deactivating: bool = False,
-    deleting: bool = False,
-) -> None:
-    """Keep at least one active operator account available for recovery."""
-    if not user.is_superadmin or not user.is_active:
-        return
-    if not (demoting or deactivating or deleting):
-        return
-
-    # Acting-org sessions are tenant-scoped. Bypass that read filter and lock the
-    # active operator rows so concurrent administrative changes serialize on
-    # databases that support SELECT FOR UPDATE (SQLite serializes writes itself).
-    active_ids = list(
-        (
-            await session.execute(
-                select(User.id)
-                .where(User.is_superadmin.is_(True), User.is_active.is_(True))
-                .execution_options(skip_org_filter=True)
-                .with_for_update()
-            )
-        ).scalars()
-    )
-    if active_ids == [user.id]:
-        raise HTTPException(
-            status.HTTP_400_BAD_REQUEST,
-            "The last active operator cannot be demoted, deactivated, or deleted",
-        )
 
 
 async def _detail(session: AsyncSession, user: User) -> UserDetail:

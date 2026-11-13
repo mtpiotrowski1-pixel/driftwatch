@@ -1,4 +1,4 @@
-"""Liveness endpoint for external monitoring."""
+"""Liveness (``/livez``) and readiness (``/readyz``, ``/healthz``) endpoints."""
 
 from __future__ import annotations
 

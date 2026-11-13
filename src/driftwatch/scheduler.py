@@ -149,6 +149,8 @@ class MonitorScheduler:
         self._last_tick_at = datetime.now(UTC)
         await self._refresh_billing_access()
         await self._check_due_sites()
+        if self._maintenance_paused:
+            return
         await self._retry_pending_changes()
         await self._prune_old_usage()
         try:
@@ -236,7 +238,9 @@ class MonitorScheduler:
         retention: int,
     ) -> None:
         processed = 0
-        while processed < limit:
+        # A restore waits for this loop; stop at the next job instead of draining
+        # the whole batch while every HTTP request is answered with 503.
+        while processed < limit and not self._maintenance_paused:
             if processed:
                 await _pace(min_interval, jitter)
             async with self._db.session() as session:
@@ -270,13 +274,10 @@ class MonitorScheduler:
                 global_capacity=self._settings.check_queue_capacity,
                 per_org_capacity=self._settings.check_queue_per_org_capacity,
             )
+            store = SettingsStore(session, SecretBox(*self._settings.encryption_keys))
+            retention = await store.snapshot_retention(default=self._settings.snapshot_retention)
             await session.commit()
-        result = await self._execute_job(
-            job,
-            retention=self._settings.snapshot_retention,
-            propagate=True,
-            bounded=False,
-        )
+        result = await self._execute_job(job, retention=retention, propagate=True, bounded=False)
         assert result is not None
         return result
 
@@ -417,6 +418,8 @@ class MonitorScheduler:
             return
         logger.info("tick: retrying %d pending change(s)", len(pending))
         for change_id in pending:
+            if self._maintenance_paused:
+                return
             try:
                 await self._runner.reprocess_change(change_id)
             except Exception:
@@ -431,7 +434,12 @@ async def find_changes_to_retry(session: AsyncSession, now: datetime, limit: int
     rows = (
         await session.execute(
             select(ChangeEvent.id, ChangeEvent.next_retry_at)
+            .join(Site, Site.id == ChangeEvent.site_id)
+            .join(Organization, Organization.id == Site.organization_id)
             .where(
+                # A suspended tenant's changes would fail with AccessDenied on every
+                # tick and, sorted first, starve every other tenant's retries.
+                Organization.is_active.is_(True),
                 ChangeEvent.retry_status.is_(None),
                 or_(ChangeEvent.ai_error.is_not(None), ChangeEvent.notification_error.is_not(None)),
             )
@@ -480,10 +488,6 @@ async def _pace(min_interval: float, jitter: float) -> None:
 
 def _as_utc(value: datetime) -> datetime:
     return value if value.tzinfo is not None else value.replace(tzinfo=UTC)
-
-
-async def find_due_sites(session: AsyncSession, now: datetime) -> list[int]:
-    return [candidate.site_id for candidate in await find_due_site_candidates(session, now)]
 
 
 async def find_due_site_candidates(session: AsyncSession, now: datetime) -> list[DueSite]:

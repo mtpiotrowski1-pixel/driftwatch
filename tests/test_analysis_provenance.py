@@ -90,10 +90,13 @@ async def test_history_covers_actual_capped_input_and_preserves_previous_rules(
             assert sent["diff_text"].endswith("[... diff truncated ...]")
             encoded = json.dumps(
                 {
-                    "version": 1,
+                    "version": 2,
                     "model": sent["model"],
                     "system": sent["system_prompt"],
-                    "user": f"URL: {sent['url']}\n\nChanges:\n{sent['diff_text']}",
+                    "user": (
+                        f"URL: {sent['url']}\n\n<page_changes>\n{sent['diff_text']}"
+                        "\n</page_changes>"
+                    ),
                 },
                 ensure_ascii=False,
                 sort_keys=True,

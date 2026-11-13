@@ -49,6 +49,7 @@ from driftwatch.schemas import (
     PasswordResetRequest,
     RegisterRequest,
     StepUpRequest,
+    TotpCodesOut,
     TotpEnableRequest,
     TotpLoginRequest,
     TotpSetupOut,
@@ -135,7 +136,8 @@ async def login(
     if not user.is_active:
         raise HTTPException(status.HTTP_403_FORBIDDEN, "This account is deactivated")
 
-    await throttle.reset(ip_key)
+    # The per-IP failures are left to age out: resetting them here would let one
+    # attacker-owned account refill the budget for guessing other accounts.
     await throttle.reset(email_key)
     if needs_rehash(user.password_hash):
         user.password_hash = await ahash_password(credentials.password)
@@ -528,7 +530,7 @@ async def totp_setup(user: StepUpUser, session: SessionDep, box: SecretBoxDep) -
     )
 
 
-@router.post("/totp/enable", response_model=dict[str, list[str]])
+@router.post("/totp/enable", response_model=TotpCodesOut)
 async def totp_enable(
     payload: TotpEnableRequest,
     request: Request,
@@ -538,7 +540,7 @@ async def totp_enable(
     settings: SettingsDep,
     box: SecretBoxDep,
     throttle: LoginThrottleDep,
-) -> dict[str, list[str]]:
+) -> TotpCodesOut:
     """Confirm enrollment with a code from the app, then return one-time recovery
     codes (shown once — they are stored only as hashes)."""
     if user.totp_enabled:
@@ -573,7 +575,7 @@ async def totp_enable(
     session.sync_session.info["skip_final_commit"] = True
     _set_session_cookie(response, user, settings)
     response.delete_cookie(STEP_UP_COOKIE, path="/")
-    return {"recovery_codes": codes}
+    return TotpCodesOut(recovery_codes=codes)
 
 
 @router.post("/totp/disable", status_code=status.HTTP_204_NO_CONTENT)
@@ -617,7 +619,9 @@ async def step_up(
     Even a live session must prove the password again (and a TOTP code when 2FA
     is on) before downloading the full backup or deleting an organization, so a
     hijacked session cannot trigger them with a single click."""
-    key = f"step-up:{user.id}:{_client_key(request)}"
+    # Keyed per account, like change-password: a stolen cookie replayed from many
+    # addresses must not multiply the guessing budget.
+    key = f"step-up:{user.id}"
     await _reject_if_throttled(throttle, key)
     if not await averify_password(payload.password, user.password_hash):
         await throttle.record_failure(key)

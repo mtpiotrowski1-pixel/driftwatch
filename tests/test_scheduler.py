@@ -15,7 +15,11 @@ from driftwatch.db import Database
 from driftwatch.models import AccountEmailJob, ChangeEvent, Organization, Site, Snapshot, User
 from driftwatch.monitoring.pipeline import clear_retry_state
 from driftwatch.runner import SiteRunner
-from driftwatch.scheduler import MonitorScheduler, find_changes_to_retry, find_due_sites
+from driftwatch.scheduler import (
+    MonitorScheduler,
+    find_changes_to_retry,
+    find_due_site_candidates,
+)
 from tests.conftest import RecordingChannel, ScriptedCapturer, create_org
 
 
@@ -49,7 +53,7 @@ async def test_find_due_sites_selects_unchecked_and_overdue(database: Database) 
         ids = {never_checked.id, overdue.id}
 
     async with database.session() as session:
-        due = set(await find_due_sites(session, now))
+        due = {candidate.site_id for candidate in await find_due_site_candidates(session, now)}
     assert due == ids
 
 
@@ -68,7 +72,7 @@ async def test_find_due_sites_excludes_suspended_organizations(database: Databas
         active_id = active_site.id
 
     async with database.session() as session:
-        due = await find_due_sites(session, now)
+        due = [candidate.site_id for candidate in await find_due_site_candidates(session, now)]
 
     assert due == [active_id]
 
@@ -106,6 +110,35 @@ async def test_resolved_change_is_not_retried_forever(database: Database) -> Non
 
     async with database.session() as session:
         assert await find_changes_to_retry(session, now, limit=10) == []
+
+
+async def test_retry_selection_skips_suspended_organizations(database: Database) -> None:
+    now = datetime.now(UTC)
+    change_ids: dict[str, int] = {}
+    async with database.session() as session:
+        for name in ("suspended", "active"):
+            org_id = await create_org(session, name)
+            site = Site(url=f"https://{name}.test", organization_id=org_id)
+            session.add(site)
+            await session.flush()
+            snapshot = Snapshot(site_id=site.id, content_html="<p>x</p>", content_text="x")
+            session.add(snapshot)
+            await session.flush()
+            change = ChangeEvent(
+                site_id=site.id, new_snapshot_id=snapshot.id, ai_error="provider timeout"
+            )
+            session.add(change)
+            await session.flush()
+            change_ids[name] = change.id
+            if name == "suspended":
+                organization = await session.get(Organization, org_id)
+                assert organization is not None
+                organization.is_active = False
+        await session.commit()
+
+    # The suspended tenant's change sorts first and would fill a limit of one.
+    async with database.session() as session:
+        assert await find_changes_to_retry(session, now, limit=1) == [change_ids["active"]]
 
 
 def _scheduler(database: Database, settings: Settings) -> MonitorScheduler:

@@ -46,7 +46,8 @@ def matching_counter(
 ) -> int | None:
     """Return the matched step so a caller can atomically prevent login replay."""
     cleaned = code.strip().replace(" ", "")
-    if not cleaned.isdigit() or len(cleaned) != _DIGITS:
+    # isdigit() alone accepts non-ASCII digits, which compare_digest rejects with TypeError.
+    if not (cleaned.isascii() and cleaned.isdigit()) or len(cleaned) != _DIGITS:
         return None
     counter = int((time.time() if at is None else at) // _PERIOD_SECONDS)
     for drift in (0, *range(-window, 0), *range(1, window + 1)):

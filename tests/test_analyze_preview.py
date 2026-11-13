@@ -37,9 +37,8 @@ async def test_preview_returns_verdict_without_persisting(
     assert body["headline"] == "Headline"
     assert body["summary"] == "Summary"
 
-    # The draft rules (tagged as such) reached the model...
-    assert "source: draft" in analyzer.calls[-1]
-    assert _RULES in analyzer.calls[-1]
+    # The draft rules, not the stored ones, reached the model...
+    assert analyzer.calls[-1].endswith(f"Importance rules:\n{_RULES}")
 
     # ...but nothing was written to the change itself.
     detail = (await admin_client.get(f"/api/changes/{change_id}")).json()

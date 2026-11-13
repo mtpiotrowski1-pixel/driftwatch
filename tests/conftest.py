@@ -8,6 +8,7 @@ verdict (or raises), and a recording channel captures outbound mail.
 from __future__ import annotations
 
 import ipaddress
+import os
 from collections.abc import AsyncIterator
 from pathlib import Path
 
@@ -21,7 +22,7 @@ import driftwatch.security.urls as urls
 from driftwatch.config import Settings
 from driftwatch.db import Database
 from driftwatch.enums import EmailChannelName
-from driftwatch.exceptions import NotFoundError
+from driftwatch.exceptions import NotFoundError, PlanLimitReached
 from driftwatch.models import Organization, User
 from driftwatch.monitoring.analyzer import Analysis, AnalysisError
 from driftwatch.monitoring.picker import (
@@ -34,7 +35,22 @@ from driftwatch.monitoring.picker import (
 )
 from driftwatch.monitoring.usage import CostEstimate, TokenUsage
 from driftwatch.notifications.email import EmailEnvelope, SendError
+from driftwatch.quota import reserve_ai_check
 from driftwatch.security.passwords import ahash_password
+
+
+@pytest.fixture(autouse=True)
+def _isolate_settings(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Keep the developer's ``.env`` and ``DRIFTWATCH_*`` variables out of every test.
+
+    ``scripts/bootstrap_env.py`` writes the Docker ``.env`` into the repository root,
+    which is also where pytest runs. ``DRIFTWATCH_TEST_*`` variables select test
+    infrastructure and are kept.
+    """
+    for name in list(os.environ):
+        if name.startswith("DRIFTWATCH_") and not name.startswith("DRIFTWATCH_TEST_"):
+            monkeypatch.delenv(name)
+    monkeypatch.setitem(Settings.model_config, "env_file", None)
 
 
 @pytest.fixture(autouse=True)
@@ -184,6 +200,17 @@ async def create_org(session: AsyncSession, name: str = "Test") -> int:
     session.add(org)
     await session.flush()
     return org.id
+
+
+async def can_reserve_ai_check(session: AsyncSession, org_id: int) -> bool:
+    """Whether the production reservation would allow one more AI check; rolled back."""
+    try:
+        await reserve_ai_check(session, org_id)
+    except PlanLimitReached:
+        return False
+    finally:
+        await session.rollback()
+    return True
 
 
 async def set_test_user_password(

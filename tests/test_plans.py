@@ -7,8 +7,7 @@ import httpx
 
 from driftwatch.db import Database
 from driftwatch.models import AIUsage, Organization, Site
-from driftwatch.quota import ai_check_limit_reached
-from tests.conftest import create_org, set_test_user_password
+from tests.conftest import can_reserve_ai_check, create_org, set_test_user_password
 
 
 async def _step_up(admin_client: httpx.AsyncClient, organization_id: int | None = None) -> None:
@@ -131,7 +130,7 @@ async def test_org_admin_cannot_change_their_own_plan_or_limits(
     assert blocked.status_code == 403
 
 
-async def test_ai_check_limit_reached(database: Database) -> None:
+async def test_ai_check_limit_counts_recorded_usage(database: Database) -> None:
     async with database.session() as session:
         org_id = await create_org(session)
         org = await session.get(Organization, org_id)
@@ -145,11 +144,11 @@ async def test_ai_check_limit_reached(database: Database) -> None:
         site_id = site.id
 
     async with database.session() as session:
-        assert await ai_check_limit_reached(session, org_id) is False  # 1 of 2 used
+        assert await can_reserve_ai_check(session, org_id) is True  # 1 of 2 used
         session.add_all([AIUsage(organization_id=org_id, site_id=site_id, model="gpt")])
         await session.commit()
     async with database.session() as session:
-        assert await ai_check_limit_reached(session, org_id) is True  # 2 of 2 used
+        assert await can_reserve_ai_check(session, org_id) is False  # 2 of 2 used
 
 
 async def test_ai_check_limit_unlimited_when_unset(database: Database) -> None:
@@ -157,4 +156,4 @@ async def test_ai_check_limit_unlimited_when_unset(database: Database) -> None:
         org_id = await create_org(session)  # monthly_ai_check_limit is NULL by default
         await session.commit()
     async with database.session() as session:
-        assert await ai_check_limit_reached(session, org_id) is False
+        assert await can_reserve_ai_check(session, org_id) is True

@@ -19,6 +19,8 @@ from hashlib import sha256
 from typing import TYPE_CHECKING, Protocol
 from uuid import NAMESPACE_URL, uuid5
 
+import httpx
+
 from driftwatch.enums import EmailChannelName
 from driftwatch.exceptions import InvalidRequest
 from driftwatch.security.urls import validate_public_host
@@ -136,14 +138,20 @@ class SMTPChannel:
 class BrevoChannel:
     name = EmailChannelName.BREVO
     _ENDPOINT = "https://api.brevo.com/v3/smtp/email"
+    _TIMEOUT_SECONDS = 15.0
 
-    def __init__(self, api_key: str, sender: Sender) -> None:
+    def __init__(
+        self,
+        api_key: str,
+        sender: Sender,
+        *,
+        transport: httpx.AsyncBaseTransport | None = None,
+    ) -> None:
         self._api_key = api_key
         self._sender = sender
+        self._transport = transport
 
     async def send(self, envelope: EmailEnvelope) -> str:
-        import httpx
-
         payload = {
             "sender": {"email": self._sender.email, "name": self._sender.name},
             "to": [{"email": envelope.to, "name": envelope.to_name or envelope.to}],
@@ -159,8 +167,14 @@ class BrevoChannel:
                 "idempotencyKey": _brevo_idempotency_key(envelope.idempotency_key),
             }
         headers = {"api-key": self._api_key, "content-type": "application/json"}
-        async with httpx.AsyncClient(timeout=15.0) as client:
-            response = await client.post(self._ENDPOINT, json=payload, headers=headers)
+        try:
+            async with httpx.AsyncClient(
+                timeout=self._TIMEOUT_SECONDS, trust_env=False, transport=self._transport
+            ) as client:
+                response = await client.post(self._ENDPOINT, json=payload, headers=headers)
+        except httpx.HTTPError as exc:
+            # The exception text can carry the request URL and headers.
+            raise SendError("brevo request failed") from exc
         try:
             response_payload = response.json()
         except ValueError:

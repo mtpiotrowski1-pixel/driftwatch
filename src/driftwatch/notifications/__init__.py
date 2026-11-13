@@ -1,1 +1,1 @@
-"""Email rendering and delivery for detected changes."""
+"""Rendering and durable delivery of change notifications by email and webhook."""

@@ -10,9 +10,6 @@ import httpx
 import pytest
 
 import driftwatch.security.urls as urls
-from driftwatch.enums import NotificationStatus
-from driftwatch.models import ChangeEvent, Site
-from driftwatch.notifications.dispatch import _send_webhook
 from driftwatch.notifications.webhook import WebhookError, WebhookEvent, send_webhook
 from driftwatch.settings_store import WebhookConfig
 
@@ -104,7 +101,43 @@ async def test_discord_payload() -> None:
         await send_webhook(
             EVENT, WebhookConfig(url="https://example.com/hook", format="discord"), client=client
         )
-    assert "content" in captured["json"]
+    assert "Price changed" in captured["json"]["content"]
+
+
+_MENTIONING_EVENT = WebhookEvent(
+    site_label="Acme",
+    site_url="https://acme.example",
+    headline="@everyone <!channel> price & terms",
+    summary="<@U123> see <https://attacker.example|this>",
+    significant=True,
+    details_url="https://app.example/sites/1",
+    detected_at="2026-06-18 10:00 UTC",
+)
+
+
+async def test_slack_text_cannot_mention_or_link_from_page_content() -> None:
+    captured: dict[str, object] = {}
+    async with _capturing_client(captured) as client:
+        await send_webhook(
+            _MENTIONING_EVENT,
+            WebhookConfig(url="https://example.com/hook", format="slack"),
+            client=client,
+        )
+    text = captured["json"]["text"]
+    assert "&lt;!channel&gt; price &amp; terms" in text
+    assert "&lt;@U123&gt; see &lt;https://attacker.example|this&gt;" in text
+    assert "<" not in text
+
+
+async def test_discord_payload_disables_mentions() -> None:
+    captured: dict[str, object] = {}
+    async with _capturing_client(captured) as client:
+        await send_webhook(
+            _MENTIONING_EVENT,
+            WebhookConfig(url="https://example.com/hook", format="discord"),
+            client=client,
+        )
+    assert captured["json"]["allowed_mentions"] == {"parse": []}
 
 
 async def test_refuses_localhost_url() -> None:
@@ -278,19 +311,3 @@ async def test_transport_error_does_not_echo_secret_webhook_url() -> None:
 
     assert str(raised.value) == "webhook delivery failed"
     assert "private-token" not in str(raised.value)
-
-
-async def test_dispatch_logs_failed_webhook_without_leaking_url() -> None:
-    # An unreachable/blocked URL is logged as a failed 'webhook' delivery, and the
-    # log records the format label, never the secret URL.
-    site = Site(url="https://acme.example", name="Acme")
-    change = ChangeEvent(headline="x", summary="y", significant=True)
-    log = await _send_webhook(
-        change, site, WebhookConfig(url="http://127.0.0.1/secret-token", format="slack"), "u", "now"
-    )
-    assert log.status == NotificationStatus.FAILED
-    assert log.channel == "webhook"
-    assert log.recipient_email == "webhook:slack"
-    assert "127.0.0.1" not in (log.recipient_email or "")
-    assert log.error == "webhook delivery failed"
-    assert "secret-token" not in (log.error or "")

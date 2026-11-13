@@ -1,10 +1,12 @@
 """In-memory failure throttle for the authentication endpoints.
 
 Argon2 makes each password guess expensive but does not stop a determined
-brute-force or password-spray. This caps repeated failures per client over a
-sliding window. It is process-local and keyed per client address, so a single
-source is slowed without letting an attacker lock another user's account; a
-multi-instance deployment would back this with shared storage.
+brute-force or password-spray. This caps actions or failures per key over a
+sliding window. Callers choose the keys: login uses one per client address and
+one per target email, so a spray against one account from many addresses is
+also capped. The per-email cap means anyone can delay logins to a known address;
+password recovery clears it. The state is process-local, so a multi-instance
+deployment needs shared storage or an equivalent limit at the edge.
 
 Memory is bounded: keys whose newest failure has aged out of the window can
 never throttle again, so they are swept lazily, and a hard key cap evicts the

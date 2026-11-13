@@ -160,26 +160,6 @@ async def reserve_ai_check(session: AsyncSession, org_id: int) -> None:
     await _raise_ai_reservation_failure(session, org_id)
 
 
-async def ai_check_limit_reached(session: AsyncSession, org_id: int) -> bool:
-    """Read-only quota status used by APIs and operator summaries."""
-    org = await session.get(Organization, org_id)
-    if org is None or not org.is_active:
-        return True
-    if org.monthly_ai_check_limit is None:
-        return False
-    month_key, month_start = _current_month()
-    actual = (
-        await session.execute(
-            select(func.count(AIUsage.id)).where(
-                AIUsage.organization_id == org_id,
-                AIUsage.created_at >= month_start,
-            )
-        )
-    ).scalar_one()
-    reserved = org.ai_checks_reserved if org.ai_usage_month == month_key else 0
-    return max(actual, reserved) >= org.monthly_ai_check_limit
-
-
 async def _raise_site_reservation_failure(session: AsyncSession, org_id: int) -> None:
     org = await session.get(Organization, org_id)
     if org is None or not org.is_active:

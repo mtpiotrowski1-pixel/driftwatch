@@ -25,14 +25,31 @@ def test_public_deploy_rejects_short_secret() -> None:
         Settings(**{**_PUBLIC, "session_secret_key": "too-short"})
 
 
-def test_public_deploy_rejects_env_example_placeholder_secret() -> None:
-    # The .env.example placeholder is 33 chars — long enough to pass the length
-    # check — but publicly known, so an unedited copy must not boot exposed.
-    with pytest.raises(ValueError, match="SESSION_SECRET_KEY"):
+@pytest.mark.parametrize(
+    ("field", "placeholder", "message"),
+    [
+        ("session_secret_key", "change-me-to-a-long-random-string", "SESSION_SECRET_KEY"),
+        ("session_secret_key", "set-a-distinct-strong-session-key", "SESSION_SECRET_KEY"),
+        ("encryption_key", "set-a-distinct-strong-encryption-key", "ENCRYPTION_KEY"),
+        ("encryption_key", "change-me-but-still-over-32-characters", "ENCRYPTION_KEY"),
+    ],
+)
+def test_public_deploy_rejects_published_example_keys(
+    field: str, placeholder: str, message: str
+) -> None:
+    # Every placeholder is long enough to pass the length check on its own.
+    assert len(placeholder) >= 32
+    with pytest.raises(ValueError, match=message):
+        Settings(**{**_PUBLIC, field: placeholder})
+
+
+def test_published_example_worker_token_is_rejected() -> None:
+    with pytest.raises(ValueError, match="published example value"):
         Settings(
             **{
                 **_PUBLIC,
-                "session_secret_key": "change-me-to-a-long-random-string",
+                "capture_worker_url": "https://capture.example.test",
+                "capture_worker_token": "set-a-distinct-long-random-token",
             }
         )
 

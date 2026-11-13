@@ -44,10 +44,9 @@ _OVERLAY_PATH = Path(__file__).with_name("overlay.js")
 
 
 async def _resolver_pin(url: str) -> str | None:
-    """A Chromium ``--host-resolver-rules`` arg pinning the host to its validated
-    IP, so the headed browser connects to the exact address the SSRF check
-    approved — closing the resolve-vs-connect DNS-rebind window, as the capturer
-    does. ``None`` for an IP-literal host."""
+    """A Chromium ``--host-resolver-rules`` arg pinning the start host to its
+    validated IP, as the capturer does. Other hosts are not pinned. ``None`` for
+    an IP-literal host."""
     host = urlsplit(url).hostname
     if not host:
         return None
@@ -283,8 +282,8 @@ class PickerSession:
 
     @staticmethod
     async def _is_public(url: str) -> bool:
-        """Guard the headed browser against redirect/DNS-rebind SSRF: the picker
-        re-validates the URL it actually landed on, mirroring the capture path."""
+        """Re-validate the URL the headed browser actually landed on, as the capture
+        path does, so a redirect cannot leave the picker on a private address."""
         try:
             await validate_public_url(url)
         except InvalidRequest:

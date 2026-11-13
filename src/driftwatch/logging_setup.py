@@ -32,5 +32,6 @@ def configure_logging(settings: Settings) -> None:
     root.setLevel(level)
     root.handlers = [console, file_handler]
 
-    # Uvicorn's access log is redundant with our structured request logging.
+    # Per-request access lines are left to the reverse proxy; the application
+    # log keeps warnings and errors from uvicorn's access logger.
     logging.getLogger("uvicorn.access").setLevel(logging.WARNING)

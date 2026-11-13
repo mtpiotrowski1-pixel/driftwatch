@@ -309,19 +309,18 @@ async def test_failures_back_off_then_move_to_dead_letter(database: Database) ->
     assert metrics.active == 0
 
 
-async def test_queue_caps_apply_globally_and_per_tenant(database: Database) -> None:
-    organization_ids, site_ids = await _seed_sites(database, (2, 1, 1))
+async def test_scheduled_and_manual_checks_stop_at_global_capacity(database: Database) -> None:
+    organization_ids, site_ids = await _seed_sites(database, (1, 1, 1))
     now = datetime.now(UTC)
     inserted = await _enqueue(
         database,
         [
             DueSite(site_ids[0][0], organization_ids[0], None),
-            DueSite(site_ids[0][1], organization_ids[0], None),
             DueSite(site_ids[1][0], organization_ids[1], None),
         ],
         now=now,
         global_capacity=2,
-        per_org_capacity=1,
+        per_org_capacity=10,
     )
     assert len(inserted) == 2
 
@@ -335,12 +334,50 @@ async def test_queue_caps_apply_globally_and_per_tenant(database: Database) -> N
                 now=now,
                 lease_seconds=30,
                 global_capacity=2,
-                per_org_capacity=1,
+                per_org_capacity=10,
             )
         await session.rollback()
         metrics = await check_queue_metrics(session, now=now)
     assert metrics.pending == 2
     assert metrics.oldest_pending_seconds == 0
+
+
+async def test_one_workspace_cannot_take_more_than_its_queue_share(database: Database) -> None:
+    organization_ids, site_ids = await _seed_sites(database, (2, 1))
+    now = datetime.now(UTC)
+    inserted = await _enqueue(
+        database,
+        [
+            DueSite(site_ids[0][0], organization_ids[0], None),
+            DueSite(site_ids[0][1], organization_ids[0], None),
+            DueSite(site_ids[1][0], organization_ids[1], None),
+        ],
+        now=now,
+        global_capacity=10,
+        per_org_capacity=1,
+    )
+
+    async with database.session() as session:
+        queued = set(
+            (
+                await session.scalars(
+                    select(SiteCheckJob.site_id).where(SiteCheckJob.id.in_(inserted))
+                )
+            ).all()
+        )
+        assert queued == {site_ids[0][0], site_ids[1][0]}
+        with pytest.raises(CheckQueueFull, match="workspace has reached its queued-check limit"):
+            await enqueue_and_claim_manual(
+                session,
+                site_ids[0][1],
+                kind=CheckJobKind.CHECK,
+                analyze=True,
+                now=now,
+                lease_seconds=30,
+                global_capacity=10,
+                per_org_capacity=1,
+            )
+        await session.rollback()
 
 
 async def test_terminal_job_retention_includes_dead_letters(database: Database) -> None:
@@ -401,6 +438,34 @@ async def test_expired_ineligible_job_releases_the_site_lock(database: Database)
     assert row is not None
     assert row.status == CheckJobStatus.CANCELLED
     assert row.lease_token is None
+
+
+async def test_site_is_scheduled_again_after_its_cancelled_job(database: Database) -> None:
+    organization_ids, site_ids = await _seed_sites(database, (1,))
+    due = DueSite(site_ids[0][0], organization_ids[0], None)
+    now = datetime.now(UTC)
+    [first] = await _enqueue(database, [due], now=now)
+    async with database.session() as session:
+        site = await session.get(Site, site_ids[0][0])
+        assert site is not None
+        site.enabled = False
+        await session.commit()
+        assert await cancel_unrunnable_checks(session, now=now) == 1
+        await session.commit()
+        site = await session.get(Site, site_ids[0][0])
+        assert site is not None
+        site.enabled = True
+        await session.commit()
+
+    # last_checked_at has not moved, so the due window is the same as before.
+    [second] = await _enqueue(database, [due], now=now + timedelta(minutes=1))
+
+    assert second != first
+    async with database.session() as session:
+        statuses = {
+            job.id: job.status for job in (await session.scalars(select(SiteCheckJob))).all()
+        }
+    assert statuses == {first: CheckJobStatus.CANCELLED, second: CheckJobStatus.PENDING}
 
 
 class _BlockingRunner:

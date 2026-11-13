@@ -15,7 +15,8 @@ from hashlib import sha256
 from typing import cast
 from uuid import uuid4
 
-from sqlalchemy import delete, exists, func, or_, select, update
+from sqlalchemy import String, case, delete, exists, func, or_, select, update
+from sqlalchemy import cast as sql_cast
 from sqlalchemy.engine import CursorResult
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -509,6 +510,18 @@ async def cancel_unrunnable_checks(session: AsyncSession, *, now: datetime) -> i
                 lease_expires_at=None,
                 completed_at=now,
                 last_error="site disabled or organization suspended",
+                # A scheduled key names the site's due window, which does not move
+                # until a capture succeeds. Free it so the site is scheduled again
+                # once it is re-enabled; manual and redrive keys stay idempotent.
+                idempotency_key=case(
+                    (
+                        SiteCheckJob.source == CheckJobSource.SCHEDULED,
+                        SiteCheckJob.idempotency_key
+                        + ":cancelled:"
+                        + sql_cast(SiteCheckJob.id, String),
+                    ),
+                    else_=SiteCheckJob.idempotency_key,
+                ),
             )
             .execution_options(synchronize_session=False)
         ),

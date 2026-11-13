@@ -1,9 +1,9 @@
-"""Public, unauthenticated branding for the marketing landing page.
+"""Branding: public instance values, per-organization values and brand assets.
 
-The landing is served before anyone signs in, so it cannot read settings through
-the admin-gated ``/api/settings``. This endpoint exposes only the operator's
-instance-level branding — never any other setting — so the page can render the
-operator's name, logo, accent colour, and hero copy with sensible fallbacks.
+The landing page is served before sign-in, so ``GET /api/branding`` returns only
+the operator's instance-level branding and no other setting. Signed-in users get
+their organization's effective branding from ``/workspace``. Administrators
+upload and delete brand images, which are served same-origin.
 """
 
 from __future__ import annotations

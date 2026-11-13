@@ -17,7 +17,10 @@ class AnalysisInput:
 
 
 def user_message(url: str, diff_text: str) -> str:
-    return f"URL: {url}\n\nChanges:\n{diff_text}"
+    # A page must not be able to close the data block early and continue with text
+    # that reads like instructions.
+    contained = diff_text.replace("</page_changes", "<\\/page_changes")
+    return f"URL: {url}\n\n<page_changes>\n{contained}\n</page_changes>"
 
 
 def prepare_input(
@@ -32,7 +35,7 @@ def prepare_input(
     # requested model, rather than only the uncapped raw diff.
     encoded = json.dumps(
         {
-            "version": 1,
+            "version": 2,
             "model": model,
             "system": system_prompt,
             "user": user_message(url, diff_text),

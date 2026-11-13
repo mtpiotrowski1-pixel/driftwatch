@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import httpx
 
-from tests.conftest import ScriptedCapturer
+from tests.conftest import RecordingChannel, ScriptedCapturer, StubAnalyzer
 
 _V1 = "<html><body><h1>Docs</h1><p>The first version of the page body</p></body></html>"
 _V2 = "<html><body><h1>Docs</h1><p>The second version of the page body</p></body></html>"
@@ -32,33 +32,63 @@ async def test_create_site_rejects_unsafe_url(admin_client: httpx.AsyncClient) -
     assert response.status_code == 400
 
 
-async def test_dry_check_skips_analysis(
-    admin_client: httpx.AsyncClient, capturer: ScriptedCapturer
-) -> None:
-    capturer.queue.extend([_V1, _V2])
-    site_id = (await admin_client.post("/api/sites", json={"url": "https://example.test"})).json()[
-        "id"
-    ]
+async def _site_with_recipient(client: httpx.AsyncClient) -> int:
+    recipient = await client.post("/api/recipients", json={"email": "ops@example.com"})
+    assert recipient.status_code == 201, recipient.text
+    site = await client.post(
+        "/api/sites",
+        json={"url": "https://example.test", "recipient_ids": [recipient.json()["id"]]},
+    )
+    assert site.status_code == 201, site.text
+    return int(site.json()["id"])
 
-    await admin_client.post(f"/api/sites/{site_id}/check", params={"analyze": "false"})
-    changed = await admin_client.post(f"/api/sites/{site_id}/check", params={"analyze": "false"})
-    assert changed.json()["status"] == "changed"
+
+async def test_dry_check_records_the_change_without_analysis_or_delivery(
+    admin_client: httpx.AsyncClient,
+    capturer: ScriptedCapturer,
+    analyzer: StubAnalyzer,
+    channel: RecordingChannel,
+) -> None:
+    _v3 = "<html><body><h1>Docs</h1><p>The third version of the page body</p></body></html>"
+    capturer.queue.extend([_V1, _V2, _v3])
+    site_id = await _site_with_recipient(admin_client)
+    check = f"/api/sites/{site_id}/check"
+
+    assert (await admin_client.post(check, params={"analyze": "false"})).json()[
+        "status"
+    ] == "baseline"
+    dry = await admin_client.post(check, params={"analyze": "false"})
+    assert dry.json()["status"] == "changed"
+    assert analyzer.calls == []
+    assert channel.sent == []
+
+    # Control: the same site is analyzed and delivered once analysis is requested.
+    assert (await admin_client.post(check)).json()["status"] == "changed"
+    assert len(analyzer.calls) == 1
+    assert len(channel.sent) == 1
 
     changes = (await admin_client.get("/api/changes", params={"site_id": site_id})).json()
-    assert len(changes) == 1
-    assert changes[0]["significant"] is None  # analysis was skipped
+    statuses = sorted(change["analysis_status"] for change in changes)
+    assert statuses == ["not_requested", "succeeded"]
 
 
-async def test_snapshot_rebaselines(
+async def test_snapshot_replaces_the_baseline_without_a_change(
     admin_client: httpx.AsyncClient, capturer: ScriptedCapturer
 ) -> None:
-    capturer.queue.extend([_V1])
+    capturer.queue.extend([_V1, _V2, _V2])
     site_id = (await admin_client.post("/api/sites", json={"url": "https://example.test"})).json()[
         "id"
     ]
-    response = await admin_client.post(f"/api/sites/{site_id}/snapshot")
-    assert response.status_code == 200
-    assert response.json()["status"] == "baseline"
+    assert (await admin_client.post(f"/api/sites/{site_id}/check")).json()["status"] == "baseline"
+
+    snapshot = await admin_client.post(f"/api/sites/{site_id}/snapshot")
+    assert snapshot.status_code == 200
+    assert snapshot.json()["status"] == "baseline"
+
+    # The next check compares against V2, so the page is unchanged.
+    assert (await admin_client.post(f"/api/sites/{site_id}/check")).json()["status"] == "unchanged"
+    changes = (await admin_client.get("/api/changes", params={"site_id": site_id})).json()
+    assert changes == []
 
 
 async def test_notifications_audit_and_action_required(
@@ -121,3 +151,52 @@ async def test_notifications_filter_by_change(
     # An unknown change id matches nothing rather than falling back to the feed.
     empty = await admin_client.get("/api/notifications", params={"change_id": 99_999})
     assert empty.json() == []
+
+
+async def test_unparseable_ignore_selector_is_rejected_before_it_is_stored(
+    admin_client: httpx.AsyncClient,
+) -> None:
+    rejected = await admin_client.post(
+        "/api/sites", json={"url": "https://example.test", "ignore_selectors": ["div["]}
+    )
+    assert rejected.status_code == 422
+    assert "Invalid CSS selector" in rejected.text
+
+    accepted = await admin_client.post(
+        "/api/sites", json={"url": "https://example.test", "ignore_selectors": [".banner"]}
+    )
+    assert accepted.status_code == 201, accepted.text
+
+
+async def test_display_names_are_bounded_by_the_column_length(
+    admin_client: httpx.AsyncClient,
+) -> None:
+    too_long = await admin_client.post(
+        "/api/recipients", json={"email": "ops@example.com", "name": "x" * 201}
+    )
+    assert too_long.status_code == 422
+    longest = await admin_client.post(
+        "/api/recipients", json={"email": "ops@example.com", "name": "x" * 200}
+    )
+    assert longest.status_code == 201, longest.text
+
+
+async def test_manual_check_prunes_with_the_retention_saved_in_settings(
+    admin_client: httpx.AsyncClient, capturer: ScriptedCapturer
+) -> None:
+    pages = [f"<main><p>Version {index} of the watched page body</p></main>" for index in range(4)]
+    capturer.queue.extend(pages)
+    saved = await admin_client.put("/api/settings", json={"snapshot_retention": 2})
+    assert saved.status_code == 200, saved.text
+    site_id = (await admin_client.post("/api/sites", json={"url": "https://example.test"})).json()[
+        "id"
+    ]
+
+    for _ in pages:
+        check = await admin_client.post(f"/api/sites/{site_id}/check", params={"analyze": "false"})
+        assert check.status_code == 200, check.text
+
+    # Keeping two snapshots keeps the two changes that end at them. The
+    # environment default (much larger) would have kept all three.
+    changes = (await admin_client.get("/api/changes", params={"site_id": site_id})).json()
+    assert len(changes) == 2

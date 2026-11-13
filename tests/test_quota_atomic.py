@@ -13,13 +13,18 @@ from driftwatch.db import Database
 from driftwatch.exceptions import AccessDenied, PlanLimitReached
 from driftwatch.models import AIUsage, Organization, Site
 from driftwatch.quota import (
-    ai_check_limit_reached,
     release_site_slot,
     reserve_ai_check,
     reserve_site_slot,
 )
 from driftwatch.runner import SiteRunner
-from tests.conftest import RecordingChannel, ScriptedCapturer, StubAnalyzer, create_org
+from tests.conftest import (
+    RecordingChannel,
+    ScriptedCapturer,
+    StubAnalyzer,
+    can_reserve_ai_check,
+    create_org,
+)
 
 
 async def test_parallel_site_reservations_cannot_exceed_cap(database: Database) -> None:
@@ -78,7 +83,7 @@ async def test_parallel_ai_reservations_cannot_exceed_monthly_cap(database: Data
         organization = await session.get(Organization, org_id)
         assert organization is not None
         assert organization.ai_checks_reserved == 4
-        assert await ai_check_limit_reached(session, org_id) is True
+        assert await can_reserve_ai_check(session, org_id) is False
 
 
 async def test_deleting_site_does_not_reset_ai_usage(database: Database) -> None:
@@ -106,7 +111,7 @@ async def test_deleting_site_does_not_reset_ai_usage(database: Database) -> None
         usage = (await session.execute(select(AIUsage))).scalar_one()
         assert usage.organization_id == org_id
         assert usage.site_id is None
-        assert await ai_check_limit_reached(session, org_id) is True
+        assert await can_reserve_ai_check(session, org_id) is False
 
 
 async def test_usage_api_retains_deleted_site_cost_and_isolates_other_tenants(
