@@ -46,6 +46,7 @@ from driftwatch.security.crypto import SecretBox
 from driftwatch.security.interaction_secrets import (
     InteractionSecretUnavailable,
     redact_captured_html,
+    redact_raw_markup,
     redact_resolved_step_values,
     resolve_site_interaction_steps,
 )
@@ -286,7 +287,7 @@ async def _capture(
     if not raw_html.strip():
         raise CaptureError("Capture returned no document HTML")
     base_url = captured.base_url if isinstance(captured, CapturedPage) else site.url
-    raw_html = redact_resolved_step_values(raw_html, interaction_steps)
+    raw_html = redact_raw_markup(raw_html, interaction_steps)
     # Parsing and cleaning a full page is CPU-bound; keep it off the event loop.
     cleaned = await asyncio.to_thread(
         clean_dom, raw_html, ignore_selectors=ignore_selectors, base_url=base_url

@@ -117,6 +117,8 @@ docs/              guides, architecture and decision records
 - [ADR 003](docs/adr/003-ai-boundary.md): what the model is allowed to decide,
   how each verdict keeps its model, prompt and input hash, and why an unknown
   price is shown as unknown rather than zero.
+- [ADR 004](docs/adr/004-optional-billing.md): why a self-hosted tool carries an
+  optional billing module, and how it fails closed.
 - [Architecture](docs/ARCHITECTURE.md): process boundaries, tenant isolation,
   sessions, and the browser sandbox.
 - [tests/](tests): lease loss and retry exhaustion under a controlled clock,
@@ -147,6 +149,18 @@ docs/              guides, architecture and decision records
 
 [Recovery](docs/RECOVERY.md) describes what to do with exhausted jobs and
 failed deliveries. [Security](SECURITY.md) lists the trust boundaries.
+
+## How it was built
+
+Driftwatch was written with AI agents and skills that I built for my own
+workflow. My part was the product scope, the architecture decisions recorded
+in the [ADRs](docs/adr) and deciding when a change was done.
+
+A later review pass with Claude Code went through the whole repository. It
+found a CI failure that occurred only on GitHub's runners, tests that could not
+fail, and defects in authentication, the check queue and billing. Every fix has
+a regression test, and the important ones were confirmed to fail against the
+previous code. The [changelog](CHANGELOG.md) lists them.
 
 ## Documentation
 

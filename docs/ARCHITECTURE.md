@@ -169,8 +169,8 @@ Roles are:
 Fresh first-account registration atomically claims a singleton
 `InstanceBootstrap` record and creates an operator who also administers the
 default organization. The durable completion marker prevents a restart or
-account deletion from reopening initial setup. The migration closes setup for
-existing databases with users or organizations; it never promotes a legacy user.
+account deletion from reopening initial setup. The initial migration creates
+that record in the open state; no migration promotes an existing user.
 Loopback setup is permitted by default; a non-loopback runtime needs explicit
 `initial_admin_signup_enabled` or a seeded operator. Ongoing public registration
 is a separate, closed-by-default switch and cannot grant the operator role.
@@ -293,9 +293,12 @@ Interaction `fill` values are encrypted in `InteractionSecret`. Site JSON and
 ordinary API responses contain only opaque references. The clear value exists
 transiently inside the worker request. The worker returns bounded raw HTML, which
 may reflect that value. Before storing, comparing or sending content to AI, the
-application redacts plaintext and supported encodings in the decoded DOM. This
-is best-effort removal of known reflections; the approved page already received
-the value and can transform it. Error messages and logs do not copy fill values.
+application redacts plaintext and supported encodings in the decoded DOM. A
+value shorter than eight characters is redacted only where it is a whole text
+node or attribute value, because inside other text it would also replace
+unrelated content, such as the digits of a year. This is best-effort removal of
+known reflections; the approved page already received the value and can
+transform it. Error messages and logs do not copy fill values.
 
 Global body limits cover ordinary API requests. SQLite restore and branding
 bitmap uploads use bounded streaming raw bodies so authentication runs before

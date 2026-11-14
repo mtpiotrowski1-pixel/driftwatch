@@ -292,6 +292,39 @@ async def test_html_entities_cannot_reintroduce_a_fill_secret(
         assert "[REDACTED]" in snapshot.content_text
 
 
+async def test_short_fill_value_is_redacted_only_where_it_is_the_whole_value(
+    database: Database, settings: Settings
+) -> None:
+    markup = (
+        "<main><h1>Plans 2018</h1><p>Basic 18 EUR</p><p> 18 </p>"
+        '<a href="/plans/18" title="18">Plan</a><input name="age" value="18"></main>'
+    )
+    box = SecretBox(settings.secret_key)
+    async with database.session() as session:
+        org_id = await create_org(session)
+        site = Site(organization_id=org_id, url="https://example.test", interaction_steps=[])
+        session.add(site)
+        await session.flush()
+        await replace_site_interaction_steps(
+            session,
+            box,
+            site,
+            [InteractionStepIn(action="fill", selector="#age", secret_value="18")],
+        )
+        snapshot_id = await capture_and_store(
+            session, site, capturer=ScriptedCapturer(html=markup), secret_box=box
+        )
+        snapshot = await session.get(Snapshot, snapshot_id)
+
+    assert snapshot is not None
+    assert "<h1>Plans 2018</h1>" in snapshot.content_html
+    assert "Basic 18 EUR" in snapshot.content_text
+    assert 'href="https://example.test/plans/18"' in snapshot.content_html
+    assert "<p> [REDACTED] </p>" in snapshot.content_html
+    assert 'title="[REDACTED]"' in snapshot.content_html
+    assert 'value="[REDACTED]"' in snapshot.content_html
+
+
 async def test_invalid_fill_request_does_not_echo_secret(
     admin_client: httpx.AsyncClient,
 ) -> None:

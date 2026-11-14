@@ -114,8 +114,10 @@ overrides can price future calls; historical usage retains its recorded cost.
 Usage covers recorded successful responses, previews and responses discarded
 after ownership was lost. Transport errors, refusals or invalid structured
 responses can incur provider charges without a stored usage row. Failed work
-still consumes its reserved quota. Use the provider's billing records for total
-spend; the dashboard is an estimate of recorded work.
+still consumes its reserved quota. A missing API key or an incomplete price
+override is detected before the reservation and consumes none. Use the
+provider's billing records for total spend; the dashboard is an estimate of
+recorded work.
 Estimates use standard uncached input/output rates and do not apply cache or
 batch discounts.
 

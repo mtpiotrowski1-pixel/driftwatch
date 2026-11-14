@@ -5,6 +5,9 @@ The application runs `alembic upgrade head` on startup (see
 one is migrated forward automatically. A database that has tables but no Alembic
 version is refused rather than stamped, because its schema cannot be verified.
 
+The chain starts from a single 1.0 baseline. Databases created by development
+builds before that baseline are not upgraded and must be created again.
+
 To add a migration after changing the models:
 
     alembic revision --autogenerate -m "describe the change"

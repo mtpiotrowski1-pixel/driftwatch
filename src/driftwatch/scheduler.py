@@ -36,7 +36,7 @@ from driftwatch.check_queue import (
 )
 from driftwatch.config import Settings
 from driftwatch.db import Database, snapshot_sqlite, sqlite_file_path
-from driftwatch.enums import CheckJobKind
+from driftwatch.enums import CheckJobKind, CheckJobSource
 from driftwatch.models import ChangeEvent, Organization, Site
 from driftwatch.retention import prune_ai_usage, prune_site_history
 from driftwatch.runner import RunResult, SiteRunner
@@ -326,7 +326,14 @@ class MonitorScheduler:
             # interaction value. The authorized caller still receives the
             # runner result, but the operations queue persists only a safe
             # category; detailed diagnostics remain in application logs.
-            await self._record_job_failure(job, "CaptureError: capture failed")
+            # A manual check is not retried: its caller has the result, and
+            # each background retry would extend the site's failure streak
+            # until a single click sent a "site appears down" alert.
+            await self._record_job_failure(
+                job,
+                "CaptureError: capture failed",
+                retry=job.source is not CheckJobSource.MANUAL,
+            )
             return result
 
         async with self._db.session() as session:
@@ -341,7 +348,9 @@ class MonitorScheduler:
                 await session.commit()
         return result
 
-    async def _record_job_failure(self, job: ClaimedCheckJob, error: str) -> None:
+    async def _record_job_failure(
+        self, job: ClaimedCheckJob, error: str, *, retry: bool = True
+    ) -> None:
         async with self._db.session() as session:
             await fail_check(
                 session,
@@ -349,6 +358,7 @@ class MonitorScheduler:
                 error=error,
                 now=datetime.now(UTC),
                 max_attempts=self._settings.check_job_max_attempts,
+                retry=retry,
             )
 
     @property

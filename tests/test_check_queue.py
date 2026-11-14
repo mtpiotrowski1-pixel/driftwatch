@@ -567,6 +567,36 @@ async def test_capture_failure_is_redacted_in_durable_queue(
     assert len(row.last_error) <= 500
 
 
+async def test_failed_manual_capture_is_not_retried_in_the_background(
+    database: Database, settings: Settings
+) -> None:
+    _, site_ids = await _seed_sites(database, (1,))
+    scheduler = MonitorScheduler(database, cast(SiteRunner, _CaptureFailureRunner()), settings)
+
+    await scheduler.run_manual_check(site_ids[0][0])
+
+    async with database.session() as session:
+        row = (await session.execute(select(SiteCheckJob))).scalar_one()
+    assert row.status == CheckJobStatus.DEAD
+    assert row.attempt_count == 1
+    assert row.available_at is None
+    assert await _claim(database, datetime.now(UTC) + timedelta(days=1)) is None
+
+
+async def test_failed_scheduled_capture_is_retried(database: Database, settings: Settings) -> None:
+    await _seed_sites(database, (1,))
+    scheduler = MonitorScheduler(database, cast(SiteRunner, _CaptureFailureRunner()), settings)
+
+    await scheduler.tick()
+
+    async with database.session() as session:
+        row = (await session.execute(select(SiteCheckJob))).scalar_one()
+    assert row.source == CheckJobSource.SCHEDULED
+    assert row.status == CheckJobStatus.PENDING
+    assert row.attempt_count == 1
+    assert row.available_at is not None
+
+
 async def test_analysis_failure_is_redacted_in_durable_result(
     database: Database, settings: Settings
 ) -> None:

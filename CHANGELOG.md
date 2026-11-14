@@ -10,6 +10,11 @@ and this project adheres to
 
 ### Review fixes
 
+- Replace the 29 pre-release migrations with one 1.0 baseline generated from the
+  models, plus the singleton rows and the append-only ledger triggers they cannot
+  express. Its schema matches the previous chain apart from database-level column
+  defaults, which the ORM supplies, and five index names now taken from the
+  models. Databases created by earlier development builds must be recreated.
 - Give each browser probe its own time limit, so an installed browser that hangs
   on its first start falls through to the next candidate instead of using the
   whole launch budget. Real-browser tests use Playwright's Chromium. Microsoft
@@ -46,6 +51,22 @@ and this project adheres to
   and legacy interaction-step parsing.
 - Update certifi, dnspython, filelock, msgpack, soupsieve, uv and the frontend
   lock to versions without known advisories.
+- Close a manual check whose capture failed instead of retrying it in the
+  background. Each retry extended the site's failure streak, so one click
+  could end in a "site appears down" alert.
+- Check the OpenAI key and price overrides before reserving an AI check. A
+  configuration error used up one reservation on every retry, until the
+  monthly limit hid the actual cause.
+- Keep a checkout request working when a concurrent request with the same
+  idempotency key inserts its attempt first. The full rollback expired the
+  objects the request had loaded, and the next read failed with a server error.
+- Derive the key id stored with each encrypted setting from a labelled hash.
+  The previous id was the first eight bytes of the Fernet signing key. Existing
+  `dw1` values stay readable and are rewritten as `dw2` when read; an earlier
+  build cannot read `dw2`, so a downgrade needs the pre-upgrade backup.
+- Redact a fill value shorter than eight characters only where it is a whole
+  text node or attribute value. A value such as `18` was replaced inside every
+  year, price and URL of the snapshot, and before parsing even inside tag names.
 
 ### Public portfolio license
 

@@ -833,11 +833,13 @@ async def _checkout_attempt(
             status="pending",
             active_marker=True,
         )
-        session.add(attempt)
+        # A concurrent request can insert first. Only the savepoint is rolled
+        # back then: a full rollback would expire the price, user and customer
+        # this request already loaded, and the async session cannot reload them.
         try:
-            await session.commit()
+            async with session.begin_nested():
+                session.add(attempt)
         except IntegrityError:
-            await session.rollback()
             attempt = (
                 await session.execute(
                     select(CheckoutAttempt).where(
@@ -851,6 +853,8 @@ async def _checkout_attempt(
                     status.HTTP_409_CONFLICT,
                     "An unfinished checkout attempt already exists",
                 ) from None
+        else:
+            await session.commit()
     elif attempt.status == "failed":
         attempt.status = "pending"
         attempt.active_marker = True
